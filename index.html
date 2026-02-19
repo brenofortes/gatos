@@ -35,7 +35,6 @@
   }
   .app { max-width: 720px; margin: 0 auto; padding: 28px 16px 120px; position: relative; z-index: 1; }
 
-  /* Animations */
   @keyframes fadeUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
   @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
   @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -43,7 +42,6 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .fade-up { animation: fadeUp 0.5s ease both; }
 
-  /* Header */
   .header { text-align: center; margin-bottom: 28px; }
   .header .paw { font-size: 48px; animation: float 3s ease-in-out infinite; }
   .header h1 {
@@ -54,22 +52,18 @@
   }
   .header p { color: #A0A0B8; font-size: 14px; margin-top: 6px; font-weight: 700; }
 
-  /* Sync indicator */
   .sync-status {
     display: inline-flex; align-items: center; gap: 6px;
     margin-top: 8px; padding: 4px 12px; border-radius: 20px;
-    font-size: 11px; font-weight: 700;
-    transition: all 0.3s;
+    font-size: 11px; font-weight: 700; transition: all 0.3s;
   }
   .sync-status.online { background: #E0F7F5; color: #1BA8A0; }
   .sync-status.offline { background: #FFF3E0; color: #E8A317; }
   .sync-status.syncing { background: #E8F4FD; color: #3498DB; }
-  .sync-dot {
-    width: 7px; height: 7px; border-radius: 50%; background: currentColor;
-  }
+  .sync-status.error { background: #FEE; color: #E8594F; }
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
   .sync-status.syncing .sync-dot { animation: spin 1s linear infinite; border: 2px solid currentColor; border-top-color: transparent; background: none; width: 10px; height: 10px; }
 
-  /* Cat Cards */
   .cat-cards { display: flex; gap: 12px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory; }
   .cat-cards::-webkit-scrollbar { height: 0; }
   .cat-card {
@@ -97,7 +91,6 @@
   .add-cat-btn .plus { font-size: 26px; }
   .add-cat-btn .label { font-size: 11px; font-weight: 700; }
 
-  /* Panels */
   .panel {
     background: #fff; border-radius: 22px; padding: 24px;
     border: 1px solid #f0f0f4; box-shadow: 0 4px 24px rgba(0,0,0,0.04);
@@ -105,7 +98,6 @@
   }
   .panel-title { font-size: 17px; font-weight: 900; margin-bottom: 20px; }
 
-  /* Form */
   .form-label {
     font-size: 11px; font-weight: 800; color: #A0A0B8; display: block;
     margin-bottom: 7px; letter-spacing: 0.5px; text-transform: uppercase;
@@ -139,7 +131,6 @@
     font-family: inherit; box-shadow: 0 4px 14px rgba(27,168,160,0.3);
   }
 
-  /* Tabs (Bottom Nav) */
   .bottom-nav {
     position: fixed; bottom: 0; left: 0; right: 0;
     background: rgba(255,255,255,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
@@ -162,7 +153,6 @@
   .nav-btn .nav-icon { font-size: 20px; }
   .nav-btn .nav-label { font-size: 10px; }
 
-  /* Records */
   .record-item {
     display: flex; align-items: center; gap: 14px;
     padding: 14px 18px; border-radius: 14px;
@@ -189,7 +179,6 @@
   }
   .delete-btn:active { background: #FEE; }
 
-  /* Toast */
   .toast {
     position: fixed; top: 20px; right: 20px; z-index: 1000;
     color: #fff; padding: 12px 24px; border-radius: 14px; font-weight: 700;
@@ -198,14 +187,12 @@
   }
   .toast.hide { animation: slideOut 0.3s ease both; }
 
-  /* Chart */
   .chart-container { width: 100%; overflow-x: auto; padding-bottom: 8px; }
   .chart-canvas { min-width: 100%; height: 260px; }
   .chart-legend { display: flex; gap: 16px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
   .chart-legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; }
   .chart-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
 
-  /* Filter */
   .filter-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
   .filter-select {
     padding: 7px 14px; border-radius: 10px;
@@ -216,14 +203,12 @@
   .empty-state { text-align: center; padding: 40px 0; color: #bbb; }
   .empty-state .icon { font-size: 40px; margin-bottom: 8px; }
   .empty-state .text { font-weight: 700; }
-  .empty-state .sub { font-size: 13px; margin-top: 4px; }
 
   .add-cat-panel { margin-bottom: 16px; animation: fadeUp 0.3s ease both; }
   .add-cat-panel .row { display: flex; gap: 10px; }
 
   .footer { text-align: center; margin-top: 36px; font-size: 12px; color: #C8C8D8; font-weight: 700; }
 
-  /* Loading overlay */
   .loading-overlay {
     position: fixed; inset: 0; background: linear-gradient(160deg, #FEF9F4 0%, #F0F4FD 50%, #FDF2F8 100%);
     display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -238,28 +223,24 @@
 </head>
 <body>
 
-<!-- Loading -->
 <div class="loading-overlay" id="loadingOverlay">
   <div class="loading-spinner">🐾</div>
   <div class="loading-text">Carregando...</div>
 </div>
 
 <div class="app" id="app">
-  <!-- Header -->
   <div class="header fade-up">
     <div class="paw">🐾</div>
     <h1>Cat Weight</h1>
     <p>Acompanhe a saúde dos seus gatinhos</p>
-    <div class="sync-status online" id="syncStatus">
+    <div class="sync-status syncing" id="syncStatus">
       <div class="sync-dot"></div>
-      <span>Sincronizado</span>
+      <span>Conectando...</span>
     </div>
   </div>
 
-  <!-- Cat Cards -->
   <div class="cat-cards" id="catCards"></div>
 
-  <!-- Add Cat Panel -->
   <div class="panel add-cat-panel hidden" id="addCatPanel">
     <div class="panel-title">🐈 Adicionar novo gato</div>
     <div class="row">
@@ -268,7 +249,6 @@
     </div>
   </div>
 
-  <!-- Tab Content -->
   <div id="tabRegistro">
     <div class="panel">
       <div class="panel-title">Novo registro de peso</div>
@@ -315,7 +295,6 @@
   <div class="footer">Feito com 💜 para os gatinhos</div>
 </div>
 
-<!-- Bottom Nav -->
 <div class="bottom-nav">
   <button class="nav-btn active" data-tab="tabRegistro" onclick="switchTab('tabRegistro', this)">
     <span class="nav-icon">📝</span><span class="nav-label">Registrar</span>
@@ -328,151 +307,182 @@
   </button>
 </div>
 
-<!-- Firebase SDK (compat mode for simplicity in single HTML) -->
+<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 
 <script>
-// ==================== FIREBASE CONFIG ====================
-const firebaseConfig = {
+// ==================== FIREBASE INIT ====================
+firebase.initializeApp({
   apiKey: "AIzaSyBm03WXi_WVoC-h-aQWREhNuekPHZ22jWE",
   authDomain: "gatos-d453c.firebaseapp.com",
   projectId: "gatos-d453c"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-
-// Enable offline persistence
-db.enablePersistence({ synchronizeTabs: true }).catch(err => {
-  console.log('Persistence error:', err.code);
 });
 
-// Collections references
-const catsCol = db.collection('cats');
-const recordsCol = db.collection('records');
+var db = firebase.firestore();
+
+// Enable offline persistence — wrapped safely
+try { db.enablePersistence().catch(function(){}); } catch(e) {}
+
+var catsCol = db.collection('cats');
+var recordsCol = db.collection('records');
 
 // ==================== CONSTANTS ====================
-const CAT_COLORS = ["#E8594F","#1BA8A0","#E8A317","#7C5CE7","#2ECC71","#E67E22","#3498DB","#E84393"];
-const CAT_EMOJIS = ["🐱","😺","😸","🐈","😻","🙀","😽","😼"];
+var CAT_COLORS = ["#E8594F","#1BA8A0","#E8A317","#7C5CE7","#2ECC71","#E67E22","#3498DB","#E84393"];
+var CAT_EMOJIS = ["🐱","😺","😸","🐈","😻","🙀","😽","😼"];
 
 // ==================== STATE ====================
-let cats = [];
-let records = [];
-let isLoaded = false;
+var cats = [];
+var records = [];
+var isLoaded = false;
+var catsLoaded = false;
+var recordsLoaded = false;
 
 // ==================== SYNC STATUS ====================
 function setSyncStatus(status) {
-  const el = document.getElementById('syncStatus');
+  var el = document.getElementById('syncStatus');
+  if (!el) return;
   el.className = 'sync-status ' + status;
-  const labels = { online: 'Sincronizado', offline: 'Offline', syncing: 'Sincronizando...' };
-  el.innerHTML = `<div class="sync-dot"></div><span>${labels[status]}</span>`;
+  var labels = { online: 'Sincronizado', offline: 'Offline', syncing: 'Sincronizando...', error: 'Erro de conexão' };
+  el.innerHTML = '<div class="sync-dot"></div><span>' + (labels[status] || status) + '</span>';
 }
 
-// ==================== FIRESTORE LISTENERS (real-time) ====================
+function hideLoading() {
+  if (isLoaded) return;
+  isLoaded = true;
+  var overlay = document.getElementById('loadingOverlay');
+  if (overlay) {
+    overlay.classList.add('fade-out');
+    setTimeout(function() { overlay.style.display = 'none'; }, 400);
+  }
+  renderAll();
+}
+
+function checkAllLoaded() {
+  if (catsLoaded && recordsLoaded) {
+    hideLoading();
+    setSyncStatus('online');
+  }
+}
+
+// ==================== FIRESTORE LISTENERS ====================
 function setupListeners() {
-  // Listen to cats collection
-  catsCol.orderBy('createdAt', 'asc').onSnapshot(snapshot => {
-    cats = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  // Cats listener — no orderBy (avoids needing composite index)
+  catsCol.onSnapshot(function(snapshot) {
+    cats = [];
+    snapshot.forEach(function(doc) {
+      cats.push({ id: doc.id, name: doc.data().name, emoji: doc.data().emoji, createdAt: doc.data().createdAt });
+    });
+    cats.sort(function(a, b) { return (a.name || '').localeCompare(b.name || ''); });
+    catsLoaded = true;
+    checkAllLoaded();
     if (isLoaded) renderAll();
-  }, err => {
+  }, function(err) {
     console.error('Cats listener error:', err);
-    setSyncStatus('offline');
+    catsLoaded = true;
+    checkAllLoaded();
+    setSyncStatus('error');
   });
 
-  // Listen to records collection
-  recordsCol.orderBy('date', 'desc').onSnapshot(snapshot => {
-    records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  // Records listener — no orderBy
+  recordsCol.onSnapshot(function(snapshot) {
+    records = [];
+    snapshot.forEach(function(doc) {
+      records.push({ id: doc.id, catId: doc.data().catId, date: doc.data().date, weight: doc.data().weight });
+    });
+    records.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+    recordsLoaded = true;
+    checkAllLoaded();
     if (isLoaded) renderAll();
-    // Hide loading on first load
-    if (!isLoaded) {
-      isLoaded = true;
-      const overlay = document.getElementById('loadingOverlay');
-      overlay.classList.add('fade-out');
-      setTimeout(() => overlay.style.display = 'none', 400);
-      renderAll();
-    }
-  }, err => {
+  }, function(err) {
     console.error('Records listener error:', err);
-    setSyncStatus('offline');
+    recordsLoaded = true;
+    checkAllLoaded();
+    setSyncStatus('error');
   });
 
-  // Monitor connection
-  window.addEventListener('online', () => setSyncStatus('online'));
-  window.addEventListener('offline', () => setSyncStatus('offline'));
+  window.addEventListener('online', function() { setSyncStatus('online'); });
+  window.addEventListener('offline', function() { setSyncStatus('offline'); });
 }
 
 // ==================== HELPERS ====================
 function formatDate(d) {
+  if (!d) return '-';
   return new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
 }
 function formatDateFull(d) {
+  if (!d) return '-';
   return new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
 }
 
 function getCatStats(catId) {
-  const recs = records.filter(r => r.catId === catId).sort((a, b) => a.date.localeCompare(b.date));
+  var recs = records.filter(function(r) { return r.catId === catId; }).sort(function(a, b) { return (a.date || '').localeCompare(b.date || ''); });
   if (!recs.length) return null;
-  const latest = recs[recs.length - 1];
-  const prev = recs.length > 1 ? recs[recs.length - 2] : null;
-  const diff = prev ? (latest.weight - prev.weight).toFixed(2) : null;
-  return { latest: latest.weight, diff, count: recs.length };
+  var latest = recs[recs.length - 1];
+  var prev = recs.length > 1 ? recs[recs.length - 2] : null;
+  var diff = prev ? (latest.weight - prev.weight).toFixed(2) : null;
+  return { latest: latest.weight, diff: diff, count: recs.length };
 }
 
 function getCatColor(catId) {
-  const idx = cats.findIndex(c => c.id === catId);
-  return CAT_COLORS[idx % CAT_COLORS.length];
+  var idx = cats.findIndex(function(c) { return c.id === catId; });
+  return CAT_COLORS[Math.max(0, idx) % CAT_COLORS.length];
 }
 
 // ==================== TOAST ====================
-function showToast(msg, type = 'success') {
-  const existing = document.querySelector('.toast');
+function showToast(msg, type) {
+  type = type || 'success';
+  var existing = document.querySelector('.toast');
   if (existing) existing.remove();
-  const t = document.createElement('div');
+  var t = document.createElement('div');
   t.className = 'toast';
   t.textContent = msg;
   t.style.background = type === 'error' ? '#E8594F' : type === 'info' ? '#3498DB' : '#1BA8A0';
   document.body.appendChild(t);
-  setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 300); }, 2300);
+  setTimeout(function() { t.classList.add('hide'); setTimeout(function() { t.remove(); }, 300); }, 2300);
 }
 
 // ==================== RENDER ====================
 function renderCatCards() {
-  const container = document.getElementById('catCards');
-  let html = '';
-  cats.forEach((cat, i) => {
-    const stats = getCatStats(cat.id);
-    const color = CAT_COLORS[i % CAT_COLORS.length];
-    html += `<div class="cat-card" style="border:1.5px solid ${color}20; box-shadow: 0 4px 20px ${color}10, 0 1px 3px rgba(0,0,0,0.04); animation: fadeUp ${0.4 + i*0.1}s ease both;">
-      <div class="blob" style="background:${color}0A"></div>
-      <div class="emoji">${cat.emoji}</div>
-      <div class="name">${cat.name}</div>`;
+  var container = document.getElementById('catCards');
+  if (!container) return;
+  var html = '';
+  cats.forEach(function(cat, i) {
+    var stats = getCatStats(cat.id);
+    var color = CAT_COLORS[i % CAT_COLORS.length];
+    html += '<div class="cat-card" style="border:1.5px solid ' + color + '20; box-shadow: 0 4px 20px ' + color + '10, 0 1px 3px rgba(0,0,0,0.04); animation: fadeUp ' + (0.4 + i*0.1) + 's ease both;">';
+    html += '<div class="blob" style="background:' + color + '0A"></div>';
+    html += '<div class="emoji">' + (cat.emoji || '🐱') + '</div>';
+    html += '<div class="name">' + (cat.name || '?') + '</div>';
     if (stats) {
-      html += `<div class="weight-val" style="color:${color}">${stats.latest}<span> kg</span></div>`;
+      html += '<div class="weight-val" style="color:' + color + '">' + stats.latest + '<span> kg</span></div>';
       if (stats.diff) {
-        const v = parseFloat(stats.diff);
-        const bg = v > 0 ? '#FFF3E0' : v < 0 ? '#E0F7F5' : '#F5F5F5';
-        const cl = v > 0 ? '#E8A317' : v < 0 ? '#1BA8A0' : '#999';
-        const arrow = v > 0 ? '▲' : v < 0 ? '▼' : '=';
-        html += `<div class="diff" style="background:${bg};color:${cl}">${arrow} ${Math.abs(v)} kg</div>`;
+        var v = parseFloat(stats.diff);
+        var bg = v > 0 ? '#FFF3E0' : v < 0 ? '#E0F7F5' : '#F5F5F5';
+        var cl = v > 0 ? '#E8A317' : v < 0 ? '#1BA8A0' : '#999';
+        var arrow = v > 0 ? '▲' : v < 0 ? '▼' : '=';
+        html += '<div class="diff" style="background:' + bg + ';color:' + cl + '">' + arrow + ' ' + Math.abs(v) + ' kg</div>';
       }
     } else {
-      html += `<div style="font-size:12px;color:#bbb;margin-top:8px">Sem registros</div>`;
+      html += '<div style="font-size:12px;color:#bbb;margin-top:8px">Sem registros</div>';
     }
-    html += `</div>`;
+    html += '</div>';
   });
-  html += `<div class="add-cat-btn" onclick="toggleAddCat()"><div class="plus">+</div><div class="label">Novo</div></div>`;
+  html += '<div class="add-cat-btn" onclick="toggleAddCat()"><div class="plus">+</div><div class="label">Novo</div></div>';
   container.innerHTML = html;
 }
 
 function renderSelects() {
-  const sel = document.getElementById('selectCat');
-  sel.innerHTML = '<option value="">Selecione o gato...</option>';
-  cats.forEach(c => { sel.innerHTML += `<option value="${c.id}">${c.emoji} ${c.name}</option>`; });
-
-  const filt = document.getElementById('filterCat');
-  filt.innerHTML = '<option value="todos">Todos</option>';
-  cats.forEach(c => { filt.innerHTML += `<option value="${c.id}">${c.name}</option>`; });
+  var sel = document.getElementById('selectCat');
+  if (sel) {
+    sel.innerHTML = '<option value="">Selecione o gato...</option>';
+    cats.forEach(function(c) { sel.innerHTML += '<option value="' + c.id + '">' + (c.emoji || '🐱') + ' ' + c.name + '</option>'; });
+  }
+  var filt = document.getElementById('filterCat');
+  if (filt) {
+    filt.innerHTML = '<option value="todos">Todos</option>';
+    cats.forEach(function(c) { filt.innerHTML += '<option value="' + c.id + '">' + c.name + '</option>'; });
+  }
 }
 
 function toggleAddCat() {
@@ -481,194 +491,200 @@ function toggleAddCat() {
 }
 
 // ==================== FIRESTORE OPERATIONS ====================
-async function addCat() {
-  const nameInput = document.getElementById('newCatName');
-  const name = nameInput.value.trim();
+function addCat() {
+  var nameInput = document.getElementById('newCatName');
+  var name = nameInput.value.trim();
   if (!name) return;
-  const emoji = CAT_EMOJIS[cats.length % CAT_EMOJIS.length];
+  var emoji = CAT_EMOJIS[cats.length % CAT_EMOJIS.length];
 
   setSyncStatus('syncing');
-  try {
-    await catsCol.add({
-      name,
-      emoji,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
+  catsCol.add({
+    name: name,
+    emoji: emoji,
+    createdAt: new Date().toISOString()
+  }).then(function() {
     nameInput.value = '';
     document.getElementById('addCatPanel').classList.add('hidden');
-    showToast(`${name} adicionado! 🎉`);
+    showToast(name + ' adicionado! 🎉');
     setSyncStatus('online');
-  } catch (err) {
+  }).catch(function(err) {
     console.error('Error adding cat:', err);
     showToast('Erro ao adicionar gato', 'error');
-    setSyncStatus('offline');
-  }
+    setSyncStatus('error');
+  });
 }
 
-async function addRecord() {
-  const catId = document.getElementById('selectCat').value;
-  const date = document.getElementById('inputDate').value;
-  const weight = parseFloat(document.getElementById('inputWeight').value);
+function addRecord() {
+  var catId = document.getElementById('selectCat').value;
+  var date = document.getElementById('inputDate').value;
+  var weight = parseFloat(document.getElementById('inputWeight').value);
 
   if (!catId || !date) { showToast('Preencha todos os campos!', 'error'); return; }
   if (isNaN(weight) || weight <= 0 || weight > 30) { showToast('Peso inválido!', 'error'); return; }
 
-  const btn = document.getElementById('btnRecord');
+  var btn = document.getElementById('btnRecord');
   btn.disabled = true;
   setSyncStatus('syncing');
 
-  try {
-    await recordsCol.add({
-      catId,
-      date,
-      weight,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
+  recordsCol.add({
+    catId: catId,
+    date: date,
+    weight: weight,
+    createdAt: new Date().toISOString()
+  }).then(function() {
     document.getElementById('inputWeight').value = '';
     showToast('Peso registrado! 🐾');
     setSyncStatus('online');
-  } catch (err) {
+    btn.disabled = false;
+  }).catch(function(err) {
     console.error('Error adding record:', err);
     showToast('Erro ao registrar peso', 'error');
-    setSyncStatus('offline');
-  } finally {
+    setSyncStatus('error');
     btn.disabled = false;
-  }
+  });
 }
 
-async function deleteRecord(id) {
+function deleteRecord(id) {
+  if (!confirm('Remover este registro?')) return;
   setSyncStatus('syncing');
-  try {
-    await recordsCol.doc(id).delete();
+  recordsCol.doc(id).delete().then(function() {
     showToast('Registro removido', 'info');
     setSyncStatus('online');
-  } catch (err) {
-    console.error('Error deleting record:', err);
+  }).catch(function(err) {
+    console.error('Error deleting:', err);
     showToast('Erro ao remover', 'error');
-    setSyncStatus('offline');
-  }
+    setSyncStatus('error');
+  });
 }
 
 // ==================== HISTORY ====================
 function renderHistory() {
-  const filter = document.getElementById('filterCat').value;
-  const list = document.getElementById('historyList');
-  let filtered = records.slice().sort((a, b) => b.date.localeCompare(a.date));
-  if (filter !== 'todos') filtered = filtered.filter(r => r.catId === filter);
+  var filter = document.getElementById('filterCat').value;
+  var list = document.getElementById('historyList');
+  if (!list) return;
+  var filtered = records.slice().sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+  if (filter !== 'todos') filtered = filtered.filter(function(r) { return r.catId === filter; });
 
   if (!filtered.length) {
-    list.innerHTML = `<div class="empty-state"><div class="icon">📋</div><div class="text">Nenhum registro encontrado</div></div>`;
+    list.innerHTML = '<div class="empty-state"><div class="icon">📋</div><div class="text">Nenhum registro encontrado</div></div>';
     return;
   }
-  let html = '';
-  filtered.forEach((rec, i) => {
-    const cat = cats.find(c => c.id === rec.catId);
-    const color = getCatColor(rec.catId);
-    html += `<div class="record-item" style="animation: fadeUp ${0.2 + i*0.04}s ease both">
-      <div class="record-icon" style="background:${color}12">${cat?.emoji || '🐱'}</div>
-      <div class="record-info">
-        <div class="record-name">${cat?.name || '?'}</div>
-        <div class="record-date">${formatDateFull(rec.date)}</div>
-      </div>
-      <div class="record-weight" style="color:${color}">${rec.weight}<span> kg</span></div>
-      <button class="delete-btn" onclick="deleteRecord('${rec.id}')">✕</button>
-    </div>`;
+  var html = '';
+  filtered.forEach(function(rec, i) {
+    var cat = cats.find(function(c) { return c.id === rec.catId; });
+    var color = getCatColor(rec.catId);
+    html += '<div class="record-item" style="animation: fadeUp ' + (0.2 + i*0.04) + 's ease both">';
+    html += '<div class="record-icon" style="background:' + color + '12">' + (cat ? cat.emoji : '🐱') + '</div>';
+    html += '<div class="record-info">';
+    html += '<div class="record-name">' + (cat ? cat.name : '?') + '</div>';
+    html += '<div class="record-date">' + formatDateFull(rec.date) + '</div>';
+    html += '</div>';
+    html += '<div class="record-weight" style="color:' + color + '">' + rec.weight + '<span> kg</span></div>';
+    html += '<button class="delete-btn" onclick="deleteRecord(\'' + rec.id + '\')">✕</button>';
+    html += '</div>';
   });
   list.innerHTML = html;
 }
 
 // ==================== CHART ====================
 function renderChart() {
-  const canvas = document.getElementById('chartCanvas');
-  const ctx = canvas.getContext('2d');
-  const dpr = window.devicePixelRatio || 1;
-  const rect = canvas.parentElement.getBoundingClientRect();
+  var canvas = document.getElementById('chartCanvas');
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var dpr = window.devicePixelRatio || 1;
+  var rect = canvas.parentElement.getBoundingClientRect();
   canvas.width = rect.width * dpr;
   canvas.height = 260 * dpr;
   canvas.style.width = rect.width + 'px';
   canvas.style.height = '260px';
   ctx.scale(dpr, dpr);
 
-  const W = rect.width, H = 260;
-  const pad = { top: 20, right: 20, bottom: 40, left: 50 };
-  const cW = W - pad.left - pad.right;
-  const cH = H - pad.top - pad.bottom;
+  var W = rect.width, H = 260;
+  var pad = { top: 20, right: 20, bottom: 40, left: 50 };
+  var cW = W - pad.left - pad.right;
+  var cH = H - pad.top - pad.bottom;
 
   ctx.clearRect(0, 0, W, H);
 
-  const allDates = [...new Set(records.map(r => r.date))].sort();
+  var dateSet = {};
+  records.forEach(function(r) { if (r.date) dateSet[r.date] = true; });
+  var allDates = Object.keys(dateSet).sort();
+
   if (!allDates.length) {
     ctx.fillStyle = '#bbb'; ctx.font = '700 14px Nunito'; ctx.textAlign = 'center';
     ctx.fillText('Nenhum registro ainda', W/2, H/2);
     return;
   }
 
-  let allWeights = records.map(r => r.weight);
-  let minW = Math.min(...allWeights) - 0.5;
-  let maxW = Math.max(...allWeights) + 0.5;
+  var allWeights = records.map(function(r) { return r.weight; });
+  var minW = Math.min.apply(null, allWeights) - 0.5;
+  var maxW = Math.max.apply(null, allWeights) + 0.5;
   if (maxW - minW < 1) { minW -= 0.5; maxW += 0.5; }
 
-  const numLines = 5;
+  var numLines = 5;
   ctx.strokeStyle = '#f0f0f4'; ctx.lineWidth = 1;
-  for (let i = 0; i <= numLines; i++) {
-    const y = pad.top + (cH / numLines) * i;
+  for (var i = 0; i <= numLines; i++) {
+    var y = pad.top + (cH / numLines) * i;
     ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
-    const val = (maxW - (maxW - minW) * (i / numLines)).toFixed(1);
+    var val = (maxW - (maxW - minW) * (i / numLines)).toFixed(1);
     ctx.fillStyle = '#A0A0B8'; ctx.font = '600 11px Nunito'; ctx.textAlign = 'right';
     ctx.fillText(val + ' kg', pad.left - 8, y + 4);
   }
 
   ctx.textAlign = 'center';
-  allDates.forEach((d, i) => {
-    const x = pad.left + (cW / Math.max(allDates.length - 1, 1)) * i;
+  allDates.forEach(function(d, i) {
+    var x = pad.left + (cW / Math.max(allDates.length - 1, 1)) * i;
     ctx.fillStyle = '#A0A0B8'; ctx.font = '600 11px Nunito';
     ctx.fillText(formatDate(d), x, H - pad.bottom + 20);
   });
 
-  cats.forEach((cat, ci) => {
-    const color = CAT_COLORS[ci % CAT_COLORS.length];
-    const catRecs = allDates.map(d => {
-      const r = records.find(rec => rec.catId === cat.id && rec.date === d);
+  cats.forEach(function(cat, ci) {
+    var color = CAT_COLORS[ci % CAT_COLORS.length];
+    var catRecs = allDates.map(function(d) {
+      var r = records.find(function(rec) { return rec.catId === cat.id && rec.date === d; });
       return r ? r.weight : null;
     });
 
     ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
     ctx.beginPath();
-    let started = false;
-    catRecs.forEach((w, i) => {
+    var started = false;
+    catRecs.forEach(function(w, i) {
       if (w === null) return;
-      const x = pad.left + (cW / Math.max(allDates.length - 1, 1)) * i;
-      const y = pad.top + cH - ((w - minW) / (maxW - minW)) * cH;
+      var x = pad.left + (cW / Math.max(allDates.length - 1, 1)) * i;
+      var y = pad.top + cH - ((w - minW) / (maxW - minW)) * cH;
       if (!started) { ctx.moveTo(x, y); started = true; }
       else ctx.lineTo(x, y);
     });
     ctx.stroke();
 
-    catRecs.forEach((w, i) => {
+    catRecs.forEach(function(w, i) {
       if (w === null) return;
-      const x = pad.left + (cW / Math.max(allDates.length - 1, 1)) * i;
-      const y = pad.top + cH - ((w - minW) / (maxW - minW)) * cH;
+      var x = pad.left + (cW / Math.max(allDates.length - 1, 1)) * i;
+      var y = pad.top + cH - ((w - minW) / (maxW - minW)) * cH;
       ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2);
       ctx.fillStyle = color; ctx.fill();
       ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.stroke();
     });
   });
 
-  const legend = document.getElementById('chartLegend');
-  legend.innerHTML = cats.map((c, i) =>
-    `<div class="chart-legend-item"><div class="chart-legend-dot" style="background:${CAT_COLORS[i % CAT_COLORS.length]}"></div>${c.name}</div>`
-  ).join('');
+  var legend = document.getElementById('chartLegend');
+  if (legend) {
+    legend.innerHTML = cats.map(function(c, i) {
+      return '<div class="chart-legend-item"><div class="chart-legend-dot" style="background:' + CAT_COLORS[i % CAT_COLORS.length] + '"></div>' + c.name + '</div>';
+    }).join('');
+  }
 }
 
 // ==================== TABS ====================
 function switchTab(tabId, btn) {
-  document.querySelectorAll('[id^="tab"]').forEach(el => {
-    if (el.id === 'tabRegistro' || el.id === 'tabGrafico' || el.id === 'tabHistorico')
-      el.classList.add('hidden');
+  ['tabRegistro', 'tabGrafico', 'tabHistorico'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.add('hidden');
   });
-  document.getElementById(tabId).classList.remove('hidden');
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  var target = document.getElementById(tabId);
+  if (target) target.classList.remove('hidden');
+  document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
+  if (btn) btn.classList.add('active');
   if (tabId === 'tabGrafico') setTimeout(renderChart, 50);
   if (tabId === 'tabHistorico') renderHistory();
 }
@@ -677,30 +693,30 @@ function renderAll() {
   renderCatCards();
   renderSelects();
   renderHistory();
-  const activeTab = document.querySelector('.nav-btn.active')?.dataset.tab;
+  var activeBtn = document.querySelector('.nav-btn.active');
+  var activeTab = activeBtn ? activeBtn.getAttribute('data-tab') : '';
   if (activeTab === 'tabGrafico') renderChart();
 }
 
 // ==================== INIT ====================
 document.getElementById('inputDate').value = new Date().toISOString().slice(0, 10);
-document.getElementById('newCatName').addEventListener('keydown', e => { if (e.key === 'Enter') addCat(); });
-document.getElementById('inputWeight').addEventListener('keydown', e => { if (e.key === 'Enter') addRecord(); });
-window.addEventListener('resize', () => {
-  if (!document.getElementById('tabGrafico').classList.contains('hidden')) renderChart();
+document.getElementById('newCatName').addEventListener('keydown', function(e) { if (e.key === 'Enter') addCat(); });
+document.getElementById('inputWeight').addEventListener('keydown', function(e) { if (e.key === 'Enter') addRecord(); });
+window.addEventListener('resize', function() {
+  var tab = document.getElementById('tabGrafico');
+  if (tab && !tab.classList.contains('hidden')) renderChart();
 });
 
-// Start real-time listeners
+// Start listeners
 setupListeners();
 
-// Fallback: hide loading after 5s even if Firebase is slow
-setTimeout(() => {
-  const overlay = document.getElementById('loadingOverlay');
-  if (overlay.style.display !== 'none') {
-    overlay.classList.add('fade-out');
-    setTimeout(() => overlay.style.display = 'none', 400);
-    if (!isLoaded) isLoaded = true;
+// Fallback: hide loading after 4s
+setTimeout(function() {
+  if (!isLoaded) {
+    hideLoading();
+    if (!navigator.onLine) setSyncStatus('offline');
   }
-}, 5000);
+}, 4000);
 </script>
 </body>
 </html>
