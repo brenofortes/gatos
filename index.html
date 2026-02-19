@@ -245,7 +245,7 @@
     <div class="panel-title">🐈 Adicionar novo gato</div>
     <div class="row">
       <input class="form-input" id="newCatName" placeholder="Nome do gato" style="flex:1">
-      <button class="btn-teal" onclick="addCat()">Adicionar</button>
+      <button class="btn-teal" id="btnAddCat">Adicionar</button>
     </div>
   </div>
 
@@ -266,7 +266,7 @@
           <input type="number" step="0.1" min="0" max="30" class="form-input" id="inputWeight" placeholder="Ex: 4.5">
         </div>
       </div>
-      <button class="btn-primary" onclick="addRecord()" id="btnRecord">🐾 Registrar Peso</button>
+      <button class="btn-primary" id="btnRecord">🐾 Registrar Peso</button>
     </div>
   </div>
 
@@ -284,7 +284,7 @@
     <div class="panel">
       <div class="filter-row">
         <div class="panel-title" style="margin-bottom:0">Histórico</div>
-        <select class="filter-select" id="filterCat" onchange="renderHistory()">
+        <select class="filter-select" id="filterCat">
           <option value="todos">Todos</option>
         </select>
       </div>
@@ -296,427 +296,427 @@
 </div>
 
 <div class="bottom-nav">
-  <button class="nav-btn active" data-tab="tabRegistro" onclick="switchTab('tabRegistro', this)">
+  <button class="nav-btn active" data-tab="tabRegistro" id="navRegistro">
     <span class="nav-icon">📝</span><span class="nav-label">Registrar</span>
   </button>
-  <button class="nav-btn" data-tab="tabGrafico" onclick="switchTab('tabGrafico', this)">
+  <button class="nav-btn" data-tab="tabGrafico" id="navGrafico">
     <span class="nav-icon">📊</span><span class="nav-label">Gráfico</span>
   </button>
-  <button class="nav-btn" data-tab="tabHistorico" onclick="switchTab('tabHistorico', this)">
+  <button class="nav-btn" data-tab="tabHistorico" id="navHistorico">
     <span class="nav-icon">📋</span><span class="nav-label">Histórico</span>
   </button>
 </div>
 
-<!-- Firebase SDK -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script type="module">
+  // ==================== FIREBASE (modular SDK via CDN) ====================
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    addDoc,
+    deleteDoc,
+    doc,
+    onSnapshot
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-<script>
-// ==================== FIREBASE INIT ====================
-firebase.initializeApp({
-  apiKey: "AIzaSyBm03WXi_WVoC-h-aQWREhNuekPHZ22jWE",
-  authDomain: "gatos-d453c.firebaseapp.com",
-  projectId: "gatos-d453c"
-});
-
-var db = firebase.firestore();
-
-// Enable offline persistence — wrapped safely
-try { db.enablePersistence().catch(function(){}); } catch(e) {}
-
-var catsCol = db.collection('cats');
-var recordsCol = db.collection('records');
-
-// ==================== CONSTANTS ====================
-var CAT_COLORS = ["#E8594F","#1BA8A0","#E8A317","#7C5CE7","#2ECC71","#E67E22","#3498DB","#E84393"];
-var CAT_EMOJIS = ["🐱","😺","😸","🐈","😻","🙀","😽","😼"];
-
-// ==================== STATE ====================
-var cats = [];
-var records = [];
-var isLoaded = false;
-var catsLoaded = false;
-var recordsLoaded = false;
-
-// ==================== SYNC STATUS ====================
-function setSyncStatus(status) {
-  var el = document.getElementById('syncStatus');
-  if (!el) return;
-  el.className = 'sync-status ' + status;
-  var labels = { online: 'Sincronizado', offline: 'Offline', syncing: 'Sincronizando...', error: 'Erro de conexão' };
-  el.innerHTML = '<div class="sync-dot"></div><span>' + (labels[status] || status) + '</span>';
-}
-
-function hideLoading() {
-  if (isLoaded) return;
-  isLoaded = true;
-  var overlay = document.getElementById('loadingOverlay');
-  if (overlay) {
-    overlay.classList.add('fade-out');
-    setTimeout(function() { overlay.style.display = 'none'; }, 400);
-  }
-  renderAll();
-}
-
-function checkAllLoaded() {
-  if (catsLoaded && recordsLoaded) {
-    hideLoading();
-    setSyncStatus('online');
-  }
-}
-
-// ==================== FIRESTORE LISTENERS ====================
-function setupListeners() {
-  // Cats listener — no orderBy (avoids needing composite index)
-  catsCol.onSnapshot(function(snapshot) {
-    cats = [];
-    snapshot.forEach(function(doc) {
-      cats.push({ id: doc.id, name: doc.data().name, emoji: doc.data().emoji, createdAt: doc.data().createdAt });
-    });
-    cats.sort(function(a, b) { return (a.name || '').localeCompare(b.name || ''); });
-    catsLoaded = true;
-    checkAllLoaded();
-    if (isLoaded) renderAll();
-  }, function(err) {
-    console.error('Cats listener error:', err);
-    catsLoaded = true;
-    checkAllLoaded();
-    setSyncStatus('error');
+  var app = initializeApp({
+    apiKey: "AIzaSyBm03WXi_WVoC-h-aQWREhNuekPHZ22jWE",
+    authDomain: "gatos-d453c.firebaseapp.com",
+    projectId: "gatos-d453c"
   });
 
-  // Records listener — no orderBy
-  recordsCol.onSnapshot(function(snapshot) {
-    records = [];
-    snapshot.forEach(function(doc) {
-      records.push({ id: doc.id, catId: doc.data().catId, date: doc.data().date, weight: doc.data().weight });
-    });
-    records.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
-    recordsLoaded = true;
-    checkAllLoaded();
-    if (isLoaded) renderAll();
-  }, function(err) {
-    console.error('Records listener error:', err);
-    recordsLoaded = true;
-    checkAllLoaded();
-    setSyncStatus('error');
-  });
+  var db = getFirestore(app);
+  var catsCol = collection(db, "cats");
+  var recordsCol = collection(db, "records");
 
-  window.addEventListener('online', function() { setSyncStatus('online'); });
-  window.addEventListener('offline', function() { setSyncStatus('offline'); });
-}
+  // ==================== CONSTANTS ====================
+  var CAT_COLORS = ["#E8594F","#1BA8A0","#E8A317","#7C5CE7","#2ECC71","#E67E22","#3498DB","#E84393"];
+  var CAT_EMOJIS = ["🐱","😺","😸","🐈","😻","🙀","😽","😼"];
 
-// ==================== HELPERS ====================
-function formatDate(d) {
-  if (!d) return '-';
-  return new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
-}
-function formatDateFull(d) {
-  if (!d) return '-';
-  return new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-}
+  // ==================== STATE ====================
+  var cats = [];
+  var records = [];
+  var isLoaded = false;
+  var catsLoaded = false;
+  var recordsLoaded = false;
 
-function getCatStats(catId) {
-  var recs = records.filter(function(r) { return r.catId === catId; }).sort(function(a, b) { return (a.date || '').localeCompare(b.date || ''); });
-  if (!recs.length) return null;
-  var latest = recs[recs.length - 1];
-  var prev = recs.length > 1 ? recs[recs.length - 2] : null;
-  var diff = prev ? (latest.weight - prev.weight).toFixed(2) : null;
-  return { latest: latest.weight, diff: diff, count: recs.length };
-}
+  // ==================== SYNC STATUS ====================
+  function setSyncStatus(status) {
+    var el = document.getElementById("syncStatus");
+    if (!el) return;
+    el.className = "sync-status " + status;
+    var labels = { online: "Sincronizado", offline: "Offline", syncing: "Sincronizando...", error: "Erro de conexão" };
+    el.innerHTML = '<div class="sync-dot"></div><span>' + (labels[status] || status) + "</span>";
+  }
 
-function getCatColor(catId) {
-  var idx = cats.findIndex(function(c) { return c.id === catId; });
-  return CAT_COLORS[Math.max(0, idx) % CAT_COLORS.length];
-}
-
-// ==================== TOAST ====================
-function showToast(msg, type) {
-  type = type || 'success';
-  var existing = document.querySelector('.toast');
-  if (existing) existing.remove();
-  var t = document.createElement('div');
-  t.className = 'toast';
-  t.textContent = msg;
-  t.style.background = type === 'error' ? '#E8594F' : type === 'info' ? '#3498DB' : '#1BA8A0';
-  document.body.appendChild(t);
-  setTimeout(function() { t.classList.add('hide'); setTimeout(function() { t.remove(); }, 300); }, 2300);
-}
-
-// ==================== RENDER ====================
-function renderCatCards() {
-  var container = document.getElementById('catCards');
-  if (!container) return;
-  var html = '';
-  cats.forEach(function(cat, i) {
-    var stats = getCatStats(cat.id);
-    var color = CAT_COLORS[i % CAT_COLORS.length];
-    html += '<div class="cat-card" style="border:1.5px solid ' + color + '20; box-shadow: 0 4px 20px ' + color + '10, 0 1px 3px rgba(0,0,0,0.04); animation: fadeUp ' + (0.4 + i*0.1) + 's ease both;">';
-    html += '<div class="blob" style="background:' + color + '0A"></div>';
-    html += '<div class="emoji">' + (cat.emoji || '🐱') + '</div>';
-    html += '<div class="name">' + (cat.name || '?') + '</div>';
-    if (stats) {
-      html += '<div class="weight-val" style="color:' + color + '">' + stats.latest + '<span> kg</span></div>';
-      if (stats.diff) {
-        var v = parseFloat(stats.diff);
-        var bg = v > 0 ? '#FFF3E0' : v < 0 ? '#E0F7F5' : '#F5F5F5';
-        var cl = v > 0 ? '#E8A317' : v < 0 ? '#1BA8A0' : '#999';
-        var arrow = v > 0 ? '▲' : v < 0 ? '▼' : '=';
-        html += '<div class="diff" style="background:' + bg + ';color:' + cl + '">' + arrow + ' ' + Math.abs(v) + ' kg</div>';
-      }
-    } else {
-      html += '<div style="font-size:12px;color:#bbb;margin-top:8px">Sem registros</div>';
+  function hideLoading() {
+    if (isLoaded) return;
+    isLoaded = true;
+    var overlay = document.getElementById("loadingOverlay");
+    if (overlay) {
+      overlay.classList.add("fade-out");
+      setTimeout(function () { overlay.style.display = "none"; }, 400);
     }
-    html += '</div>';
-  });
-  html += '<div class="add-cat-btn" onclick="toggleAddCat()"><div class="plus">+</div><div class="label">Novo</div></div>';
-  container.innerHTML = html;
-}
-
-function renderSelects() {
-  var sel = document.getElementById('selectCat');
-  if (sel) {
-    sel.innerHTML = '<option value="">Selecione o gato...</option>';
-    cats.forEach(function(c) { sel.innerHTML += '<option value="' + c.id + '">' + (c.emoji || '🐱') + ' ' + c.name + '</option>'; });
-  }
-  var filt = document.getElementById('filterCat');
-  if (filt) {
-    filt.innerHTML = '<option value="todos">Todos</option>';
-    cats.forEach(function(c) { filt.innerHTML += '<option value="' + c.id + '">' + c.name + '</option>'; });
-  }
-}
-
-function toggleAddCat() {
-  document.getElementById('addCatPanel').classList.toggle('hidden');
-  document.getElementById('newCatName').focus();
-}
-
-// ==================== FIRESTORE OPERATIONS ====================
-function addCat() {
-  var nameInput = document.getElementById('newCatName');
-  var name = nameInput.value.trim();
-  if (!name) return;
-  var emoji = CAT_EMOJIS[cats.length % CAT_EMOJIS.length];
-
-  setSyncStatus('syncing');
-  catsCol.add({
-    name: name,
-    emoji: emoji,
-    createdAt: new Date().toISOString()
-  }).then(function() {
-    nameInput.value = '';
-    document.getElementById('addCatPanel').classList.add('hidden');
-    showToast(name + ' adicionado! 🎉');
-    setSyncStatus('online');
-  }).catch(function(err) {
-    console.error('Error adding cat:', err);
-    showToast('Erro ao adicionar gato', 'error');
-    setSyncStatus('error');
-  });
-}
-
-function addRecord() {
-  var catId = document.getElementById('selectCat').value;
-  var date = document.getElementById('inputDate').value;
-  var weight = parseFloat(document.getElementById('inputWeight').value);
-
-  if (!catId || !date) { showToast('Preencha todos os campos!', 'error'); return; }
-  if (isNaN(weight) || weight <= 0 || weight > 30) { showToast('Peso inválido!', 'error'); return; }
-
-  var btn = document.getElementById('btnRecord');
-  btn.disabled = true;
-  setSyncStatus('syncing');
-
-  recordsCol.add({
-    catId: catId,
-    date: date,
-    weight: weight,
-    createdAt: new Date().toISOString()
-  }).then(function() {
-    document.getElementById('inputWeight').value = '';
-    showToast('Peso registrado! 🐾');
-    setSyncStatus('online');
-    btn.disabled = false;
-  }).catch(function(err) {
-    console.error('Error adding record:', err);
-    showToast('Erro ao registrar peso', 'error');
-    setSyncStatus('error');
-    btn.disabled = false;
-  });
-}
-
-function deleteRecord(id) {
-  if (!confirm('Remover este registro?')) return;
-  setSyncStatus('syncing');
-  recordsCol.doc(id).delete().then(function() {
-    showToast('Registro removido', 'info');
-    setSyncStatus('online');
-  }).catch(function(err) {
-    console.error('Error deleting:', err);
-    showToast('Erro ao remover', 'error');
-    setSyncStatus('error');
-  });
-}
-
-// ==================== HISTORY ====================
-function renderHistory() {
-  var filter = document.getElementById('filterCat').value;
-  var list = document.getElementById('historyList');
-  if (!list) return;
-  var filtered = records.slice().sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
-  if (filter !== 'todos') filtered = filtered.filter(function(r) { return r.catId === filter; });
-
-  if (!filtered.length) {
-    list.innerHTML = '<div class="empty-state"><div class="icon">📋</div><div class="text">Nenhum registro encontrado</div></div>';
-    return;
-  }
-  var html = '';
-  filtered.forEach(function(rec, i) {
-    var cat = cats.find(function(c) { return c.id === rec.catId; });
-    var color = getCatColor(rec.catId);
-    html += '<div class="record-item" style="animation: fadeUp ' + (0.2 + i*0.04) + 's ease both">';
-    html += '<div class="record-icon" style="background:' + color + '12">' + (cat ? cat.emoji : '🐱') + '</div>';
-    html += '<div class="record-info">';
-    html += '<div class="record-name">' + (cat ? cat.name : '?') + '</div>';
-    html += '<div class="record-date">' + formatDateFull(rec.date) + '</div>';
-    html += '</div>';
-    html += '<div class="record-weight" style="color:' + color + '">' + rec.weight + '<span> kg</span></div>';
-    html += '<button class="delete-btn" onclick="deleteRecord(\'' + rec.id + '\')">✕</button>';
-    html += '</div>';
-  });
-  list.innerHTML = html;
-}
-
-// ==================== CHART ====================
-function renderChart() {
-  var canvas = document.getElementById('chartCanvas');
-  if (!canvas) return;
-  var ctx = canvas.getContext('2d');
-  var dpr = window.devicePixelRatio || 1;
-  var rect = canvas.parentElement.getBoundingClientRect();
-  canvas.width = rect.width * dpr;
-  canvas.height = 260 * dpr;
-  canvas.style.width = rect.width + 'px';
-  canvas.style.height = '260px';
-  ctx.scale(dpr, dpr);
-
-  var W = rect.width, H = 260;
-  var pad = { top: 20, right: 20, bottom: 40, left: 50 };
-  var cW = W - pad.left - pad.right;
-  var cH = H - pad.top - pad.bottom;
-
-  ctx.clearRect(0, 0, W, H);
-
-  var dateSet = {};
-  records.forEach(function(r) { if (r.date) dateSet[r.date] = true; });
-  var allDates = Object.keys(dateSet).sort();
-
-  if (!allDates.length) {
-    ctx.fillStyle = '#bbb'; ctx.font = '700 14px Nunito'; ctx.textAlign = 'center';
-    ctx.fillText('Nenhum registro ainda', W/2, H/2);
-    return;
+    renderAll();
   }
 
-  var allWeights = records.map(function(r) { return r.weight; });
-  var minW = Math.min.apply(null, allWeights) - 0.5;
-  var maxW = Math.max.apply(null, allWeights) + 0.5;
-  if (maxW - minW < 1) { minW -= 0.5; maxW += 0.5; }
-
-  var numLines = 5;
-  ctx.strokeStyle = '#f0f0f4'; ctx.lineWidth = 1;
-  for (var i = 0; i <= numLines; i++) {
-    var y = pad.top + (cH / numLines) * i;
-    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
-    var val = (maxW - (maxW - minW) * (i / numLines)).toFixed(1);
-    ctx.fillStyle = '#A0A0B8'; ctx.font = '600 11px Nunito'; ctx.textAlign = 'right';
-    ctx.fillText(val + ' kg', pad.left - 8, y + 4);
+  function checkAllLoaded() {
+    if (catsLoaded && recordsLoaded) {
+      hideLoading();
+      setSyncStatus("online");
+    }
   }
 
-  ctx.textAlign = 'center';
-  allDates.forEach(function(d, i) {
-    var x = pad.left + (cW / Math.max(allDates.length - 1, 1)) * i;
-    ctx.fillStyle = '#A0A0B8'; ctx.font = '600 11px Nunito';
-    ctx.fillText(formatDate(d), x, H - pad.bottom + 20);
-  });
-
-  cats.forEach(function(cat, ci) {
-    var color = CAT_COLORS[ci % CAT_COLORS.length];
-    var catRecs = allDates.map(function(d) {
-      var r = records.find(function(rec) { return rec.catId === cat.id && rec.date === d; });
-      return r ? r.weight : null;
+  // ==================== FIRESTORE LISTENERS ====================
+  onSnapshot(catsCol, function (snapshot) {
+    cats = [];
+    snapshot.forEach(function (d) {
+      cats.push({ id: d.id, name: d.data().name, emoji: d.data().emoji });
     });
+    cats.sort(function (a, b) { return (a.name || "").localeCompare(b.name || ""); });
+    catsLoaded = true;
+    checkAllLoaded();
+    if (isLoaded) renderAll();
+  }, function (err) {
+    console.error("Cats error:", err);
+    catsLoaded = true;
+    checkAllLoaded();
+    setSyncStatus("error");
+  });
 
-    ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-    ctx.beginPath();
-    var started = false;
-    catRecs.forEach(function(w, i) {
-      if (w === null) return;
+  onSnapshot(recordsCol, function (snapshot) {
+    records = [];
+    snapshot.forEach(function (d) {
+      records.push({ id: d.id, catId: d.data().catId, date: d.data().date, weight: d.data().weight });
+    });
+    records.sort(function (a, b) { return (b.date || "").localeCompare(a.date || ""); });
+    recordsLoaded = true;
+    checkAllLoaded();
+    if (isLoaded) renderAll();
+  }, function (err) {
+    console.error("Records error:", err);
+    recordsLoaded = true;
+    checkAllLoaded();
+    setSyncStatus("error");
+  });
+
+  window.addEventListener("online", function () { setSyncStatus("online"); });
+  window.addEventListener("offline", function () { setSyncStatus("offline"); });
+
+  // ==================== HELPERS ====================
+  function formatDate(d) {
+    if (!d) return "-";
+    return new Date(d + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+  }
+  function formatDateFull(d) {
+    if (!d) return "-";
+    return new Date(d + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
+  }
+
+  function getCatStats(catId) {
+    var recs = records.filter(function (r) { return r.catId === catId; }).sort(function (a, b) { return (a.date || "").localeCompare(b.date || ""); });
+    if (!recs.length) return null;
+    var latest = recs[recs.length - 1];
+    var prev = recs.length > 1 ? recs[recs.length - 2] : null;
+    var diff = prev ? (latest.weight - prev.weight).toFixed(2) : null;
+    return { latest: latest.weight, diff: diff, count: recs.length };
+  }
+
+  function getCatColor(catId) {
+    var idx = cats.findIndex(function (c) { return c.id === catId; });
+    return CAT_COLORS[Math.max(0, idx) % CAT_COLORS.length];
+  }
+
+  // ==================== TOAST ====================
+  function showToast(msg, type) {
+    type = type || "success";
+    var existing = document.querySelector(".toast");
+    if (existing) existing.remove();
+    var t = document.createElement("div");
+    t.className = "toast";
+    t.textContent = msg;
+    t.style.background = type === "error" ? "#E8594F" : type === "info" ? "#3498DB" : "#1BA8A0";
+    document.body.appendChild(t);
+    setTimeout(function () { t.classList.add("hide"); setTimeout(function () { t.remove(); }, 300); }, 2300);
+  }
+
+  // ==================== RENDER ====================
+  function renderCatCards() {
+    var container = document.getElementById("catCards");
+    if (!container) return;
+    var html = "";
+    cats.forEach(function (cat, i) {
+      var stats = getCatStats(cat.id);
+      var color = CAT_COLORS[i % CAT_COLORS.length];
+      html += '<div class="cat-card" style="border:1.5px solid ' + color + '20; box-shadow: 0 4px 20px ' + color + '10, 0 1px 3px rgba(0,0,0,0.04); animation: fadeUp ' + (0.4 + i * 0.1) + 's ease both;">';
+      html += '<div class="blob" style="background:' + color + '0A"></div>';
+      html += '<div class="emoji">' + (cat.emoji || "🐱") + "</div>";
+      html += '<div class="name">' + (cat.name || "?") + "</div>";
+      if (stats) {
+        html += '<div class="weight-val" style="color:' + color + '">' + stats.latest + "<span> kg</span></div>";
+        if (stats.diff) {
+          var v = parseFloat(stats.diff);
+          var bg = v > 0 ? "#FFF3E0" : v < 0 ? "#E0F7F5" : "#F5F5F5";
+          var cl = v > 0 ? "#E8A317" : v < 0 ? "#1BA8A0" : "#999";
+          var arrow = v > 0 ? "▲" : v < 0 ? "▼" : "=";
+          html += '<div class="diff" style="background:' + bg + ";color:" + cl + '">' + arrow + " " + Math.abs(v) + " kg</div>";
+        }
+      } else {
+        html += '<div style="font-size:12px;color:#bbb;margin-top:8px">Sem registros</div>';
+      }
+      html += "</div>";
+    });
+    html += '<div class="add-cat-btn" onclick="window._toggleAddCat()"><div class="plus">+</div><div class="label">Novo</div></div>';
+    container.innerHTML = html;
+  }
+
+  function renderSelects() {
+    var sel = document.getElementById("selectCat");
+    if (sel) {
+      sel.innerHTML = '<option value="">Selecione o gato...</option>';
+      cats.forEach(function (c) { sel.innerHTML += '<option value="' + c.id + '">' + (c.emoji || "🐱") + " " + c.name + "</option>"; });
+    }
+    var filt = document.getElementById("filterCat");
+    if (filt) {
+      filt.innerHTML = '<option value="todos">Todos</option>';
+      cats.forEach(function (c) { filt.innerHTML += '<option value="' + c.id + '">' + c.name + "</option>"; });
+    }
+  }
+
+  // ==================== ACTIONS ====================
+  window._toggleAddCat = function () {
+    document.getElementById("addCatPanel").classList.toggle("hidden");
+    document.getElementById("newCatName").focus();
+  };
+
+  window._addCat = function () {
+    var nameInput = document.getElementById("newCatName");
+    var name = nameInput.value.trim();
+    if (!name) return;
+    var emoji = CAT_EMOJIS[cats.length % CAT_EMOJIS.length];
+    setSyncStatus("syncing");
+    addDoc(catsCol, { name: name, emoji: emoji, createdAt: new Date().toISOString() })
+      .then(function () {
+        nameInput.value = "";
+        document.getElementById("addCatPanel").classList.add("hidden");
+        showToast(name + " adicionado! 🎉");
+        setSyncStatus("online");
+      })
+      .catch(function (err) {
+        console.error("Error adding cat:", err);
+        showToast("Erro ao adicionar gato", "error");
+        setSyncStatus("error");
+      });
+  };
+
+  window._addRecord = function () {
+    var catId = document.getElementById("selectCat").value;
+    var date = document.getElementById("inputDate").value;
+    var weight = parseFloat(document.getElementById("inputWeight").value);
+    if (!catId || !date) { showToast("Preencha todos os campos!", "error"); return; }
+    if (isNaN(weight) || weight <= 0 || weight > 30) { showToast("Peso inválido!", "error"); return; }
+
+    var btn = document.getElementById("btnRecord");
+    btn.disabled = true;
+    setSyncStatus("syncing");
+
+    addDoc(recordsCol, { catId: catId, date: date, weight: weight, createdAt: new Date().toISOString() })
+      .then(function () {
+        document.getElementById("inputWeight").value = "";
+        showToast("Peso registrado! 🐾");
+        setSyncStatus("online");
+        btn.disabled = false;
+      })
+      .catch(function (err) {
+        console.error("Error adding record:", err);
+        showToast("Erro ao registrar peso", "error");
+        setSyncStatus("error");
+        btn.disabled = false;
+      });
+  };
+
+  window._deleteRecord = function (id) {
+    if (!confirm("Remover este registro?")) return;
+    setSyncStatus("syncing");
+    deleteDoc(doc(db, "records", id))
+      .then(function () {
+        showToast("Registro removido", "info");
+        setSyncStatus("online");
+      })
+      .catch(function (err) {
+        console.error("Error deleting:", err);
+        showToast("Erro ao remover", "error");
+        setSyncStatus("error");
+      });
+  };
+
+  // ==================== HISTORY ====================
+  function renderHistory() {
+    var filter = document.getElementById("filterCat").value;
+    var list = document.getElementById("historyList");
+    if (!list) return;
+    var filtered = records.slice().sort(function (a, b) { return (b.date || "").localeCompare(a.date || ""); });
+    if (filter !== "todos") filtered = filtered.filter(function (r) { return r.catId === filter; });
+
+    if (!filtered.length) {
+      list.innerHTML = '<div class="empty-state"><div class="icon">📋</div><div class="text">Nenhum registro encontrado</div></div>';
+      return;
+    }
+    var html = "";
+    filtered.forEach(function (rec, i) {
+      var cat = cats.find(function (c) { return c.id === rec.catId; });
+      var color = getCatColor(rec.catId);
+      html += '<div class="record-item" style="animation: fadeUp ' + (0.2 + i * 0.04) + 's ease both">';
+      html += '<div class="record-icon" style="background:' + color + '12">' + (cat ? cat.emoji : "🐱") + "</div>";
+      html += '<div class="record-info">';
+      html += '<div class="record-name">' + (cat ? cat.name : "?") + "</div>";
+      html += '<div class="record-date">' + formatDateFull(rec.date) + "</div>";
+      html += "</div>";
+      html += '<div class="record-weight" style="color:' + color + '">' + rec.weight + "<span> kg</span></div>";
+      html += '<button class="delete-btn" onclick="window._deleteRecord(\'' + rec.id + "')\">✕</button>";
+      html += "</div>";
+    });
+    list.innerHTML = html;
+  }
+
+  // ==================== CHART ====================
+  function renderChart() {
+    var canvas = document.getElementById("chartCanvas");
+    if (!canvas) return;
+    var ctx = canvas.getContext("2d");
+    var dpr = window.devicePixelRatio || 1;
+    var rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = 260 * dpr;
+    canvas.style.width = rect.width + "px";
+    canvas.style.height = "260px";
+    ctx.scale(dpr, dpr);
+
+    var W = rect.width, H = 260;
+    var pad = { top: 20, right: 20, bottom: 40, left: 50 };
+    var cW = W - pad.left - pad.right;
+    var cH = H - pad.top - pad.bottom;
+
+    ctx.clearRect(0, 0, W, H);
+
+    var dateSet = {};
+    records.forEach(function (r) { if (r.date) dateSet[r.date] = true; });
+    var allDates = Object.keys(dateSet).sort();
+
+    if (!allDates.length) {
+      ctx.fillStyle = "#bbb"; ctx.font = "700 14px Nunito"; ctx.textAlign = "center";
+      ctx.fillText("Nenhum registro ainda", W / 2, H / 2);
+      return;
+    }
+
+    var allWeights = records.map(function (r) { return r.weight; });
+    var minW = Math.min.apply(null, allWeights) - 0.5;
+    var maxW = Math.max.apply(null, allWeights) + 0.5;
+    if (maxW - minW < 1) { minW -= 0.5; maxW += 0.5; }
+
+    var numLines = 5;
+    ctx.strokeStyle = "#f0f0f4"; ctx.lineWidth = 1;
+    for (var i = 0; i <= numLines; i++) {
+      var y = pad.top + (cH / numLines) * i;
+      ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+      var val = (maxW - (maxW - minW) * (i / numLines)).toFixed(1);
+      ctx.fillStyle = "#A0A0B8"; ctx.font = "600 11px Nunito"; ctx.textAlign = "right";
+      ctx.fillText(val + " kg", pad.left - 8, y + 4);
+    }
+
+    ctx.textAlign = "center";
+    allDates.forEach(function (d, i) {
       var x = pad.left + (cW / Math.max(allDates.length - 1, 1)) * i;
-      var y = pad.top + cH - ((w - minW) / (maxW - minW)) * cH;
-      if (!started) { ctx.moveTo(x, y); started = true; }
-      else ctx.lineTo(x, y);
+      ctx.fillStyle = "#A0A0B8"; ctx.font = "600 11px Nunito";
+      ctx.fillText(formatDate(d), x, H - pad.bottom + 20);
     });
-    ctx.stroke();
 
-    catRecs.forEach(function(w, i) {
-      if (w === null) return;
-      var x = pad.left + (cW / Math.max(allDates.length - 1, 1)) * i;
-      var y = pad.top + cH - ((w - minW) / (maxW - minW)) * cH;
-      ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2);
-      ctx.fillStyle = color; ctx.fill();
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.stroke();
+    cats.forEach(function (cat, ci) {
+      var color = CAT_COLORS[ci % CAT_COLORS.length];
+      var catRecs = allDates.map(function (d) {
+        var r = records.find(function (rec) { return rec.catId === cat.id && rec.date === d; });
+        return r ? r.weight : null;
+      });
+
+      ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.lineCap = "round";
+      ctx.beginPath();
+      var started = false;
+      catRecs.forEach(function (w, i) {
+        if (w === null) return;
+        var x = pad.left + (cW / Math.max(allDates.length - 1, 1)) * i;
+        var y = pad.top + cH - ((w - minW) / (maxW - minW)) * cH;
+        if (!started) { ctx.moveTo(x, y); started = true; }
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+
+      catRecs.forEach(function (w, i) {
+        if (w === null) return;
+        var x = pad.left + (cW / Math.max(allDates.length - 1, 1)) * i;
+        var y = pad.top + cH - ((w - minW) / (maxW - minW)) * cH;
+        ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2);
+        ctx.fillStyle = color; ctx.fill();
+        ctx.strokeStyle = "#fff"; ctx.lineWidth = 2.5; ctx.stroke();
+      });
     });
+
+    var legend = document.getElementById("chartLegend");
+    if (legend) {
+      legend.innerHTML = cats.map(function (c, i) {
+        return '<div class="chart-legend-item"><div class="chart-legend-dot" style="background:' + CAT_COLORS[i % CAT_COLORS.length] + '"></div>' + c.name + "</div>";
+      }).join("");
+    }
+  }
+
+  // ==================== TABS ====================
+  function switchTab(tabId, btn) {
+    ["tabRegistro", "tabGrafico", "tabHistorico"].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.add("hidden");
+    });
+    var target = document.getElementById(tabId);
+    if (target) target.classList.remove("hidden");
+    document.querySelectorAll(".nav-btn").forEach(function (b) { b.classList.remove("active"); });
+    if (btn) btn.classList.add("active");
+    if (tabId === "tabGrafico") setTimeout(renderChart, 50);
+    if (tabId === "tabHistorico") renderHistory();
+  }
+
+  function renderAll() {
+    renderCatCards();
+    renderSelects();
+    renderHistory();
+    var activeBtn = document.querySelector(".nav-btn.active");
+    var activeTab = activeBtn ? activeBtn.getAttribute("data-tab") : "";
+    if (activeTab === "tabGrafico") renderChart();
+  }
+
+  // ==================== EVENT LISTENERS ====================
+  document.getElementById("inputDate").value = new Date().toISOString().slice(0, 10);
+
+  document.getElementById("btnAddCat").addEventListener("click", function () { window._addCat(); });
+  document.getElementById("btnRecord").addEventListener("click", function () { window._addRecord(); });
+  document.getElementById("filterCat").addEventListener("change", function () { renderHistory(); });
+
+  document.getElementById("newCatName").addEventListener("keydown", function (e) { if (e.key === "Enter") window._addCat(); });
+  document.getElementById("inputWeight").addEventListener("keydown", function (e) { if (e.key === "Enter") window._addRecord(); });
+
+  document.getElementById("navRegistro").addEventListener("click", function () { switchTab("tabRegistro", this); });
+  document.getElementById("navGrafico").addEventListener("click", function () { switchTab("tabGrafico", this); });
+  document.getElementById("navHistorico").addEventListener("click", function () { switchTab("tabHistorico", this); });
+
+  window.addEventListener("resize", function () {
+    var tab = document.getElementById("tabGrafico");
+    if (tab && !tab.classList.contains("hidden")) renderChart();
   });
 
-  var legend = document.getElementById('chartLegend');
-  if (legend) {
-    legend.innerHTML = cats.map(function(c, i) {
-      return '<div class="chart-legend-item"><div class="chart-legend-dot" style="background:' + CAT_COLORS[i % CAT_COLORS.length] + '"></div>' + c.name + '</div>';
-    }).join('');
-  }
-}
-
-// ==================== TABS ====================
-function switchTab(tabId, btn) {
-  ['tabRegistro', 'tabGrafico', 'tabHistorico'].forEach(function(id) {
-    var el = document.getElementById(id);
-    if (el) el.classList.add('hidden');
-  });
-  var target = document.getElementById(tabId);
-  if (target) target.classList.remove('hidden');
-  document.querySelectorAll('.nav-btn').forEach(function(b) { b.classList.remove('active'); });
-  if (btn) btn.classList.add('active');
-  if (tabId === 'tabGrafico') setTimeout(renderChart, 50);
-  if (tabId === 'tabHistorico') renderHistory();
-}
-
-function renderAll() {
-  renderCatCards();
-  renderSelects();
-  renderHistory();
-  var activeBtn = document.querySelector('.nav-btn.active');
-  var activeTab = activeBtn ? activeBtn.getAttribute('data-tab') : '';
-  if (activeTab === 'tabGrafico') renderChart();
-}
-
-// ==================== INIT ====================
-document.getElementById('inputDate').value = new Date().toISOString().slice(0, 10);
-document.getElementById('newCatName').addEventListener('keydown', function(e) { if (e.key === 'Enter') addCat(); });
-document.getElementById('inputWeight').addEventListener('keydown', function(e) { if (e.key === 'Enter') addRecord(); });
-window.addEventListener('resize', function() {
-  var tab = document.getElementById('tabGrafico');
-  if (tab && !tab.classList.contains('hidden')) renderChart();
-});
-
-// Start listeners
-setupListeners();
-
-// Fallback: hide loading after 4s
-setTimeout(function() {
-  if (!isLoaded) {
-    hideLoading();
-    if (!navigator.onLine) setSyncStatus('offline');
-  }
-}, 4000);
+  // Fallback: hide loading after 4s
+  setTimeout(function () {
+    if (!isLoaded) {
+      hideLoading();
+      if (!navigator.onLine) setSyncStatus("offline");
+    }
+  }, 4000);
 </script>
 </body>
 </html>
