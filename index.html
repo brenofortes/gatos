@@ -12,876 +12,329 @@
 <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkNhdCBXZWlnaHQgLSBQZXNvIGRvcyBHYXRvcyIsCiAgInNob3J0X25hbWUiOiAiQ2F0IFdlaWdodCIsCiAgImRlc2NyaXB0aW9uIjogIkFjb21wYW5oZSBvIHBlc28gZG9zIHNldXMgZ2F0aW5ob3MiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiI0ZFRjlGNCIsCiAgInRoZW1lX2NvbG9yIjogIiNGRUY5RjQiLAogICJpY29ucyI6IFtdCn0=">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
 <style>
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  body {
-    font-family: 'Nunito', 'Segoe UI', sans-serif;
-    background: linear-gradient(160deg, #FEF9F4 0%, #F0F4FD 50%, #FDF2F8 100%);
-    color: #2D3047;
-    min-height: 100vh;
-    min-height: 100dvh;
-    overflow-x: hidden;
-    position: relative;
-  }
-  body::before, body::after {
-    content: ''; position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
-  }
-  body::before {
-    top: -120px; right: -80px; width: 350px; height: 350px;
-    background: radial-gradient(circle, rgba(232,89,79,0.07) 0%, transparent 70%);
-  }
-  body::after {
-    bottom: -100px; left: -60px; width: 400px; height: 400px;
-    background: radial-gradient(circle, rgba(27,168,160,0.06) 0%, transparent 70%);
-  }
-  .app { max-width: 720px; margin: 0 auto; padding: 28px 16px 120px; position: relative; z-index: 1; }
-
-  @keyframes fadeUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
-  @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-  @keyframes slideOut { from { opacity: 1; } to { transform: translateX(100px); opacity: 0; } }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .fade-up { animation: fadeUp 0.5s ease both; }
-
-  .header { text-align: center; margin-bottom: 28px; }
-  .header .paw { font-size: 48px; animation: float 3s ease-in-out infinite; }
-  .header h1 {
-    font-family: 'Fredoka One', cursive; font-size: 34px;
-    background: linear-gradient(135deg, #E8594F, #E8A317, #1BA8A0);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    letter-spacing: -0.5px;
-  }
-  .header p { color: #A0A0B8; font-size: 14px; margin-top: 6px; font-weight: 700; }
-
-  .sync-status {
-    display: inline-flex; align-items: center; gap: 6px;
-    margin-top: 8px; padding: 4px 12px; border-radius: 20px;
-    font-size: 11px; font-weight: 700; transition: all 0.3s;
-  }
-  .sync-status.online { background: #E0F7F5; color: #1BA8A0; }
-  .sync-status.offline { background: #FFF3E0; color: #E8A317; }
-  .sync-status.syncing { background: #E8F4FD; color: #3498DB; }
-  .sync-status.error { background: #FEE; color: #E8594F; }
-  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
-  .sync-status.syncing .sync-dot { animation: spin 1s linear infinite; border: 2px solid currentColor; border-top-color: transparent; background: none; width: 10px; height: 10px; }
-
-  .cat-cards { display: flex; gap: 12px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory; }
-  .cat-cards::-webkit-scrollbar { height: 0; }
-  .cat-card {
-    flex: 0 0 auto; min-width: 150px; padding: 18px 20px;
-    background: #fff; border-radius: 18px; position: relative; overflow: hidden;
-    scroll-snap-align: start; transition: transform 0.2s;
-  }
-  .cat-card:active { transform: scale(0.97); }
-  .cat-card .blob { position: absolute; top: -25px; right: -25px; width: 70px; height: 70px; border-radius: 50%; }
-  .cat-card .emoji { font-size: 30px; margin-bottom: 6px; }
-  .cat-card .name { font-weight: 800; font-size: 15px; }
-  .cat-card .weight-val { font-size: 26px; font-weight: 900; margin-top: 4px; }
-  .cat-card .weight-val span { font-size: 13px; font-weight: 600; color: #999; }
-  .cat-card .diff {
-    display: inline-block; margin-top: 4px; padding: 2px 8px;
-    border-radius: 6px; font-size: 12px; font-weight: 800;
-  }
-  .add-cat-btn {
-    flex: 0 0 auto; min-width: 75px; padding: 18px 20px;
-    background: #fff; border-radius: 18px; border: 2px dashed #ddd;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    cursor: pointer; transition: all 0.2s; color: #bbb;
-  }
-  .add-cat-btn:hover { border-color: #1BA8A0; background: #F7FFFE; }
-  .add-cat-btn .plus { font-size: 26px; }
-  .add-cat-btn .label { font-size: 11px; font-weight: 700; }
-
-  .panel {
-    background: #fff; border-radius: 22px; padding: 24px;
-    border: 1px solid #f0f0f4; box-shadow: 0 4px 24px rgba(0,0,0,0.04);
-    margin-bottom: 16px; animation: fadeUp 0.4s ease both;
-  }
-  .panel-title { font-size: 17px; font-weight: 900; margin-bottom: 20px; }
-
-  .form-label {
-    font-size: 11px; font-weight: 800; color: #A0A0B8; display: block;
-    margin-bottom: 7px; letter-spacing: 0.5px; text-transform: uppercase;
-  }
-  .form-input, .form-select {
-    width: 100%; padding: 13px 16px; border-radius: 12px;
-    border: 1.5px solid #E8E8EE; background: #FAFBFD;
-    color: #2D3047; font-size: 14px; font-family: inherit; font-weight: 600;
-    transition: all 0.2s; -webkit-appearance: none; appearance: none;
-  }
-  .form-input:focus, .form-select:focus {
-    outline: none; box-shadow: 0 0 0 3px rgba(27,168,160,0.18); border-color: #1BA8A0;
-  }
-  .form-row { display: flex; gap: 12px; }
-  .form-group { flex: 1; margin-bottom: 16px; }
-
-  .btn-primary {
-    width: 100%; padding: 15px; border-radius: 14px; border: none;
-    background: linear-gradient(135deg, #E8594F, #E8A317);
-    color: #fff; font-weight: 800; font-size: 15px; cursor: pointer;
-    font-family: inherit; transition: all 0.2s;
-    box-shadow: 0 6px 24px rgba(232,89,79,0.28);
-  }
-  .btn-primary:active { transform: scale(0.98); }
-  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-
-  .btn-teal {
-    padding: 11px 22px; border-radius: 12px; border: none;
-    background: linear-gradient(135deg, #1BA8A0, #3498DB);
-    color: #fff; font-weight: 800; cursor: pointer; font-size: 14px;
-    font-family: inherit; box-shadow: 0 4px 14px rgba(27,168,160,0.3);
-  }
-
-  .bottom-nav {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: rgba(255,255,255,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
-    border-top: 1px solid #f0f0f4; padding: 8px 16px;
-    padding-bottom: max(8px, env(safe-area-inset-bottom));
-    display: flex; gap: 4px; z-index: 100;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
-  }
-  .nav-btn {
-    flex: 1; padding: 10px 0; border-radius: 12px; border: none;
-    background: transparent; color: #A0A0B8; font-weight: 800;
-    cursor: pointer; font-size: 11px; font-family: inherit;
-    display: flex; flex-direction: column; align-items: center; gap: 3px;
-    transition: all 0.25s;
-  }
-  .nav-btn.active {
-    background: linear-gradient(135deg, #1BA8A0, #3498DB);
-    color: #fff; box-shadow: 0 4px 14px rgba(27,168,160,0.25);
-  }
-  .nav-btn .nav-icon { font-size: 20px; }
-  .nav-btn .nav-label { font-size: 10px; }
-
-  .record-item {
-    display: flex; align-items: center; gap: 14px;
-    padding: 14px 18px; border-radius: 14px;
-    background: #FAFBFD; border: 1px solid #f0f0f4;
-    transition: all 0.15s; margin-bottom: 8px;
-  }
-  .record-item:active { background: #F0F2F5; }
-  .record-icon {
-    width: 40px; height: 40px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 20px; flex-shrink: 0;
-  }
-  .record-info { flex: 1; }
-  .record-name { font-weight: 800; font-size: 14px; }
-  .record-date { font-size: 12px; color: #A0A0B8; font-weight: 600; }
-  .record-weight { font-weight: 900; font-size: 19px; }
-  .record-weight span { font-size: 12px; font-weight: 600; color: #bbb; }
-  .delete-btn {
-    width: 30px; height: 30px; border-radius: 9px;
-    border: 1.5px solid #fee; background: #FFF5F5;
-    color: #E8594F; cursor: pointer; font-size: 13px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; font-weight: 700;
-  }
-  .delete-btn:active { background: #FEE; }
-
-  .toast {
-    position: fixed; top: 20px; right: 20px; z-index: 1000;
-    color: #fff; padding: 12px 24px; border-radius: 14px; font-weight: 700;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.12); font-size: 14px;
-    animation: slideIn 0.3s ease;
-  }
-  .toast.hide { animation: slideOut 0.3s ease both; }
-
-  .chart-container { width: 100%; overflow-x: auto; padding-bottom: 8px; }
-  .chart-canvas { min-width: 100%; height: 260px; }
-  .chart-legend { display: flex; gap: 16px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
-  .chart-legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; }
-  .chart-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
-
-  .filter-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
-  .filter-select {
-    padding: 7px 14px; border-radius: 10px;
-    border: 1.5px solid #E8E8EE; background: #FAFBFD;
-    color: #2D3047; font-size: 12px; font-family: inherit; font-weight: 700;
-  }
-
-  .empty-state { text-align: center; padding: 40px 0; color: #bbb; }
-  .empty-state .icon { font-size: 40px; margin-bottom: 8px; }
-  .empty-state .text { font-weight: 700; }
-
-  .add-cat-panel { margin-bottom: 16px; animation: fadeUp 0.3s ease both; }
-  .add-cat-panel .row { display: flex; gap: 10px; }
-
-  .footer { text-align: center; margin-top: 36px; font-size: 12px; color: #C8C8D8; font-weight: 700; }
-
-  .loading-overlay {
-    position: fixed; inset: 0; background: linear-gradient(160deg, #FEF9F4 0%, #F0F4FD 50%, #FDF2F8 100%);
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    z-index: 9999; transition: opacity 0.4s;
-  }
-  .loading-overlay.fade-out { opacity: 0; pointer-events: none; }
-  .loading-spinner { font-size: 48px; animation: float 1.5s ease-in-out infinite; }
-  .loading-text { font-family: 'Fredoka One', cursive; font-size: 20px; color: #1BA8A0; margin-top: 12px; }
-
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{font-family:'Nunito','Segoe UI',sans-serif;background:linear-gradient(160deg,#FEF9F4 0%,#F0F4FD 50%,#FDF2F8 100%);color:#2D3047;min-height:100vh;min-height:100dvh;overflow-x:hidden;position:relative}
+  body::before,body::after{content:'';position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+  body::before{top:-120px;right:-80px;width:350px;height:350px;background:radial-gradient(circle,rgba(232,89,79,0.07) 0%,transparent 70%)}
+  body::after{bottom:-100px;left:-60px;width:400px;height:400px;background:radial-gradient(circle,rgba(27,168,160,0.06) 0%,transparent 70%)}
+  .app{max-width:720px;margin:0 auto;padding:28px 16px 120px;position:relative;z-index:1}
+  @keyframes fadeUp{from{transform:translateY(16px);opacity:0}to{transform:translateY(0);opacity:1}}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  @keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+  @keyframes slideOut{from{opacity:1}to{transform:translateX(100px);opacity:0}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes modalFadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes modalSlideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  @keyframes dotPulse{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
+  .fade-up{animation:fadeUp .5s ease both}
+  .header{text-align:center;margin-bottom:28px}
+  .header .paw{font-size:48px;animation:float 3s ease-in-out infinite}
+  .header h1{font-family:'Fredoka One',cursive;font-size:34px;background:linear-gradient(135deg,#E8594F,#E8A317,#1BA8A0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-.5px}
+  .header p{color:#A0A0B8;font-size:14px;margin-top:6px;font-weight:700}
+  .sync-status{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;transition:all .3s}
+  .sync-status.online{background:#E0F7F5;color:#1BA8A0}.sync-status.offline{background:#FFF3E0;color:#E8A317}.sync-status.syncing{background:#E8F4FD;color:#3498DB}.sync-status.error{background:#FEE;color:#E8594F}
+  .sync-dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+  .sync-status.syncing .sync-dot{animation:spin 1s linear infinite;border:2px solid currentColor;border-top-color:transparent;background:none;width:10px;height:10px}
+  .cat-cards{display:flex;gap:12px;margin-bottom:24px;overflow-x:auto;padding-bottom:6px;scroll-snap-type:x mandatory}.cat-cards::-webkit-scrollbar{height:0}
+  .cat-card{flex:0 0 auto;min-width:150px;padding:18px 20px;background:#fff;border-radius:18px;position:relative;overflow:hidden;scroll-snap-align:start;transition:transform .2s;cursor:pointer}
+  .cat-card:active{transform:scale(.97)}.cat-card .blob{position:absolute;top:-25px;right:-25px;width:70px;height:70px;border-radius:50%}
+  .cat-card .emoji{font-size:30px;margin-bottom:6px}.cat-card .name{font-weight:800;font-size:15px}
+  .cat-card .weight-val{font-size:26px;font-weight:900;margin-top:4px}.cat-card .weight-val span{font-size:13px;font-weight:600;color:#999}
+  .cat-card .diff{display:inline-block;margin-top:4px;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:800}
+  .add-cat-btn{flex:0 0 auto;min-width:75px;padding:18px 20px;background:#fff;border-radius:18px;border:2px dashed #ddd;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;color:#bbb}
+  .add-cat-btn:hover{border-color:#1BA8A0;background:#F7FFFE}.add-cat-btn .plus{font-size:26px}.add-cat-btn .label{font-size:11px;font-weight:700}
+  .panel{background:#fff;border-radius:22px;padding:24px;border:1px solid #f0f0f4;box-shadow:0 4px 24px rgba(0,0,0,.04);margin-bottom:16px;animation:fadeUp .4s ease both}
+  .panel-title{font-size:17px;font-weight:900;margin-bottom:20px}
+  .form-label{font-size:11px;font-weight:800;color:#A0A0B8;display:block;margin-bottom:7px;letter-spacing:.5px;text-transform:uppercase}
+  .form-input,.form-select{width:100%;padding:13px 16px;border-radius:12px;border:1.5px solid #E8E8EE;background:#FAFBFD;color:#2D3047;font-size:14px;font-family:inherit;font-weight:600;transition:all .2s;-webkit-appearance:none;appearance:none}
+  .form-input:focus,.form-select:focus{outline:none;box-shadow:0 0 0 3px rgba(27,168,160,.18);border-color:#1BA8A0}
+  .form-row{display:flex;gap:12px}.form-group{flex:1;margin-bottom:16px}
+  .btn-primary{width:100%;padding:15px;border-radius:14px;border:none;background:linear-gradient(135deg,#E8594F,#E8A317);color:#fff;font-weight:800;font-size:15px;cursor:pointer;font-family:inherit;transition:all .2s;box-shadow:0 6px 24px rgba(232,89,79,.28)}
+  .btn-primary:active{transform:scale(.98)}.btn-primary:disabled{opacity:.6;cursor:not-allowed}
+  .btn-teal{padding:11px 22px;border-radius:12px;border:none;background:linear-gradient(135deg,#1BA8A0,#3498DB);color:#fff;font-weight:800;cursor:pointer;font-size:14px;font-family:inherit;box-shadow:0 4px 14px rgba(27,168,160,.3)}
+  .btn-small{padding:8px 14px;border-radius:10px;border:none;font-weight:700;cursor:pointer;font-size:12px;font-family:inherit;transition:all .2s}
+  .btn-danger{background:#FFF5F5;color:#E8594F;border:1.5px solid #fee}.btn-danger:active{background:#FEE}
+  .btn-outline{background:#FAFBFD;color:#2D3047;border:1.5px solid #E8E8EE}.btn-outline:active{background:#f0f0f4}
+  .btn-purple{background:linear-gradient(135deg,#7C5CE7,#3498DB);color:#fff;border:none;box-shadow:0 4px 14px rgba(124,92,231,.25)}
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,.92);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid #f0f0f4;padding:8px 16px;padding-bottom:max(8px,env(safe-area-inset-bottom));display:flex;gap:4px;z-index:100;box-shadow:0 -4px 20px rgba(0,0,0,.04)}
+  .nav-btn{flex:1;padding:10px 0;border-radius:12px;border:none;background:transparent;color:#A0A0B8;font-weight:800;cursor:pointer;font-size:11px;font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:3px;transition:all .25s}
+  .nav-btn.active{background:linear-gradient(135deg,#1BA8A0,#3498DB);color:#fff;box-shadow:0 4px 14px rgba(27,168,160,.25)}
+  .nav-btn .nav-icon{font-size:20px}.nav-btn .nav-label{font-size:10px}
+  .record-item{display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:14px;background:#FAFBFD;border:1px solid #f0f0f4;transition:all .15s;margin-bottom:8px}
+  .record-item:active{background:#F0F2F5}
+  .record-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+  .record-info{flex:1}.record-name{font-weight:800;font-size:14px}.record-date{font-size:12px;color:#A0A0B8;font-weight:600}
+  .record-weight{font-weight:900;font-size:19px}.record-weight span{font-size:12px;font-weight:600;color:#bbb}
+  .delete-btn{width:30px;height:30px;border-radius:9px;border:1.5px solid #fee;background:#FFF5F5;color:#E8594F;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700}.delete-btn:active{background:#FEE}
+  .toast{position:fixed;top:20px;right:20px;z-index:1000;color:#fff;padding:12px 24px;border-radius:14px;font-weight:700;box-shadow:0 8px 30px rgba(0,0,0,.12);font-size:14px;animation:slideIn .3s ease}.toast.hide{animation:slideOut .3s ease both}
+  .chart-container{width:100%;overflow-x:auto;padding-bottom:8px}.chart-canvas{min-width:100%;height:260px}
+  .chart-legend{display:flex;gap:16px;justify-content:center;margin-top:16px;flex-wrap:wrap}.chart-legend-item{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700}.chart-legend-dot{width:10px;height:10px;border-radius:50%}
+  .filter-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+  .filter-select{padding:7px 14px;border-radius:10px;border:1.5px solid #E8E8EE;background:#FAFBFD;color:#2D3047;font-size:12px;font-family:inherit;font-weight:700}
+  .empty-state{text-align:center;padding:40px 0;color:#bbb}.empty-state .icon{font-size:40px;margin-bottom:8px}.empty-state .text{font-weight:700}
+  .add-cat-panel{margin-bottom:16px;animation:fadeUp .3s ease both}.add-cat-panel .row{display:flex;gap:10px}
+  .footer{text-align:center;margin-top:36px;font-size:12px;color:#C8C8D8;font-weight:700}
+  .loading-overlay{position:fixed;inset:0;background:linear-gradient(160deg,#FEF9F4 0%,#F0F4FD 50%,#FDF2F8 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s}
+  .loading-overlay.fade-out{opacity:0;pointer-events:none}.loading-spinner{font-size:48px;animation:float 1.5s ease-in-out infinite}.loading-text{font-family:'Fredoka One',cursive;font-size:20px;color:#1BA8A0;margin-top:12px}
   /* Modal */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-    z-index: 500; display: flex; align-items: flex-end; justify-content: center;
-    animation: modalFadeIn 0.3s ease;
-  }
-  @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes modalSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-  .modal-content {
-    background: #fff; border-radius: 24px 24px 0 0; padding: 28px 24px 40px;
-    width: 100%; max-width: 720px; max-height: 85vh; overflow-y: auto;
-    animation: modalSlideUp 0.35s ease;
-    box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
-  }
-  .modal-handle {
-    width: 40px; height: 4px; background: #ddd; border-radius: 4px;
-    margin: 0 auto 20px;
-  }
-  .modal-header {
-    display: flex; align-items: center; gap: 14px; margin-bottom: 20px;
-  }
-  .modal-emoji { font-size: 40px; }
-  .modal-cat-name { font-weight: 900; font-size: 22px; }
-  .modal-cat-sub { font-size: 13px; color: #A0A0B8; font-weight: 700; }
-  .modal-close {
-    position: absolute; top: 20px; right: 20px;
-    width: 32px; height: 32px; border-radius: 50%;
-    border: none; background: #f0f0f4; color: #666;
-    font-size: 16px; cursor: pointer; display: flex;
-    align-items: center; justify-content: center;
-  }
-  .ai-analysis {
-    background: linear-gradient(135deg, #F0F4FD, #FDF2F8);
-    border-radius: 16px; padding: 20px; position: relative;
-    min-height: 80px;
-  }
-  .ai-badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    background: linear-gradient(135deg, #7C5CE7, #3498DB);
-    color: #fff; font-size: 11px; font-weight: 800;
-    padding: 3px 10px; border-radius: 8px; margin-bottom: 12px;
-  }
-  .ai-text { font-size: 14px; line-height: 1.7; color: #2D3047; font-weight: 600; }
-  .ai-text p { margin-bottom: 10px; }
-  .ai-loading {
-    display: flex; align-items: center; gap: 10px;
-    color: #7C5CE7; font-weight: 700; font-size: 14px;
-  }
-  .ai-loading .dot-pulse { display: inline-flex; gap: 4px; }
-  .ai-loading .dot-pulse span {
-    width: 6px; height: 6px; border-radius: 50%; background: #7C5CE7;
-    animation: dotPulse 1.2s ease-in-out infinite;
-  }
-  .ai-loading .dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
-  .ai-loading .dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes dotPulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
-
-  .weight-history-mini { margin-top: 16px; }
-  .weight-history-mini .title { font-size: 13px; font-weight: 800; color: #A0A0B8; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-  .weight-history-mini .entry {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 8px 0; border-bottom: 1px solid #f0f0f4; font-size: 13px; font-weight: 700;
-  }
-  .weight-history-mini .entry:last-child { border-bottom: none; }
-
-  .hidden { display: none !important; }
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:500;display:flex;align-items:flex-end;justify-content:center;animation:modalFadeIn .3s ease}
+  .modal-content{background:#fff;border-radius:24px 24px 0 0;padding:28px 24px 40px;width:100%;max-width:720px;max-height:85vh;overflow-y:auto;animation:modalSlideUp .35s ease;box-shadow:0 -10px 40px rgba(0,0,0,.1);position:relative}
+  .modal-handle{width:40px;height:4px;background:#ddd;border-radius:4px;margin:0 auto 20px}
+  .modal-header{display:flex;align-items:center;gap:14px;margin-bottom:20px}
+  .modal-emoji{font-size:40px}.modal-cat-name{font-weight:900;font-size:22px}.modal-cat-sub{font-size:13px;color:#A0A0B8;font-weight:700}
+  .modal-close{position:absolute;top:20px;right:20px;width:32px;height:32px;border-radius:50%;border:none;background:#f0f0f4;color:#666;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .modal-actions{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+  .ai-analysis{background:linear-gradient(135deg,#F0F4FD,#FDF2F8);border-radius:16px;padding:20px;position:relative;min-height:80px}
+  .ai-badge{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#7C5CE7,#3498DB);color:#fff;font-size:11px;font-weight:800;padding:3px 10px;border-radius:8px;margin-bottom:12px}
+  .ai-text{font-size:14px;line-height:1.7;color:#2D3047;font-weight:600}.ai-text p{margin-bottom:10px}
+  .ai-loading{display:flex;align-items:center;gap:10px;color:#7C5CE7;font-weight:700;font-size:14px}
+  .ai-loading .dot-pulse{display:inline-flex;gap:4px}.ai-loading .dot-pulse span{width:6px;height:6px;border-radius:50%;background:#7C5CE7;animation:dotPulse 1.2s ease-in-out infinite}
+  .ai-loading .dot-pulse span:nth-child(2){animation-delay:.2s}.ai-loading .dot-pulse span:nth-child(3){animation-delay:.4s}
+  .weight-history-mini{margin-top:16px}.weight-history-mini .title{font-size:13px;font-weight:800;color:#A0A0B8;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+  .weight-history-mini .entry{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0f4;font-size:13px;font-weight:700}.weight-history-mini .entry:last-child{border-bottom:none}
+  /* Vaccine items */
+  .vax-item{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:14px;background:#FAFBFD;border:1px solid #f0f0f4;margin-bottom:8px}
+  .vax-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+  .vax-info{flex:1}.vax-name{font-weight:800;font-size:13px}.vax-date{font-size:11px;color:#A0A0B8;font-weight:600}.vax-next{font-size:11px;font-weight:700}
+  .vax-status{padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800;flex-shrink:0}
+  .vax-ok{background:#E0F7F5;color:#1BA8A0}.vax-warn{background:#FFF3E0;color:#E8A317}.vax-late{background:#FEE;color:#E8594F}
+  .section-divider{height:1px;background:#f0f0f4;margin:16px 0}
+  /* Export row */
+  .export-row{display:flex;gap:8px;margin-top:16px;justify-content:center}
+  .hidden{display:none !important}
 </style>
 </head>
 <body>
-
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="loading-spinner">🐾</div>
-  <div class="loading-text">Carregando...</div>
-</div>
-
+<div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner">🐾</div><div class="loading-text">Carregando...</div></div>
 <div class="app" id="app">
   <div class="header fade-up">
-    <div class="paw">🐾</div>
-    <h1>Cat Weight</h1>
+    <div class="paw">🐾</div><h1>Cat Weight</h1>
     <p>Acompanhe a saúde dos seus gatinhos</p>
-    <div class="sync-status syncing" id="syncStatus">
-      <div class="sync-dot"></div>
-      <span>Conectando...</span>
-    </div>
+    <div class="sync-status syncing" id="syncStatus"><div class="sync-dot"></div><span>Conectando...</span></div>
   </div>
-
   <div class="cat-cards" id="catCards"></div>
-
   <div class="panel add-cat-panel hidden" id="addCatPanel">
     <div class="panel-title">🐈 Adicionar novo gato</div>
-    <div class="row">
-      <input class="form-input" id="newCatName" placeholder="Nome do gato" style="flex:1">
-      <button class="btn-teal" id="btnAddCat">Adicionar</button>
-    </div>
+    <div class="row"><input class="form-input" id="newCatName" placeholder="Nome do gato" style="flex:1"><button class="btn-teal" id="btnAddCat">Adicionar</button></div>
   </div>
 
+  <!-- Tab Registro -->
   <div id="tabRegistro">
     <div class="panel">
       <div class="panel-title">Novo registro de peso</div>
-      <div class="form-group">
-        <label class="form-label">Gato</label>
-        <select class="form-select" id="selectCat"><option value="">Selecione o gato...</option></select>
-      </div>
+      <div class="form-group"><label class="form-label">Gato</label><select class="form-select" id="selectCat"><option value="">Selecione o gato...</option></select></div>
       <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Data</label>
-          <input type="date" class="form-input" id="inputDate">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Peso (kg)</label>
-          <input type="number" step="0.1" min="0" max="30" class="form-input" id="inputWeight" placeholder="Ex: 4.5">
-        </div>
+        <div class="form-group"><label class="form-label">Data</label><input type="date" class="form-input" id="inputDate"></div>
+        <div class="form-group"><label class="form-label">Peso (kg)</label><input type="number" step="0.1" min="0" max="30" class="form-input" id="inputWeight" placeholder="Ex: 4.5"></div>
       </div>
       <button class="btn-primary" id="btnRecord">🐾 Registrar Peso</button>
     </div>
   </div>
 
+  <!-- Tab Saúde (vacinas/vermífugos) -->
+  <div id="tabSaude" class="hidden">
+    <div class="panel">
+      <div class="panel-title">💊 Registrar Vacina / Vermífugo</div>
+      <div class="form-group"><label class="form-label">Gato</label><select class="form-select" id="selectCatVax"><option value="">Selecione o gato...</option></select></div>
+      <div class="form-group"><label class="form-label">Tipo</label>
+        <select class="form-select" id="selectVaxType">
+          <option value="vermifugo">🪱 Vermífugo</option>
+          <option value="v3">💉 V3 (Tríplice)</option>
+          <option value="v4">💉 V4 (Quádrupla)</option>
+          <option value="v5">💉 V5 (Quíntupla)</option>
+          <option value="antirrabica">💉 Antirrábica</option>
+          <option value="felv">💉 FeLV</option>
+          <option value="outro">📋 Outro</option>
+        </select>
+      </div>
+      <div class="form-group hidden" id="vaxOtherGroup"><label class="form-label">Qual?</label><input class="form-input" id="inputVaxOther" placeholder="Nome do medicamento/vacina"></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Data aplicação</label><input type="date" class="form-input" id="inputVaxDate"></div>
+        <div class="form-group"><label class="form-label">Próxima dose</label><input type="date" class="form-input" id="inputVaxNext"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Observações (opcional)</label><input class="form-input" id="inputVaxNotes" placeholder="Ex: Dr. Silva, Clínica Pet"></div>
+      <button class="btn-primary" id="btnVax" style="background:linear-gradient(135deg,#7C5CE7,#3498DB);box-shadow:0 6px 24px rgba(124,92,231,.28)">💊 Registrar</button>
+    </div>
+    <div class="panel">
+      <div class="filter-row"><div class="panel-title" style="margin-bottom:0">Carteirinha de Saúde</div>
+        <select class="filter-select" id="filterCatVax"><option value="todos">Todos</option></select>
+      </div>
+      <div id="vaxList"></div>
+    </div>
+  </div>
+
+  <!-- Tab Gráfico -->
   <div id="tabGrafico" class="hidden">
     <div class="panel">
       <div class="panel-title">Evolução de peso</div>
-      <div class="chart-container">
-        <canvas id="chartCanvas" class="chart-canvas"></canvas>
-      </div>
+      <div class="chart-container"><canvas id="chartCanvas" class="chart-canvas"></canvas></div>
       <div class="chart-legend" id="chartLegend"></div>
     </div>
   </div>
 
+  <!-- Tab Histórico -->
   <div id="tabHistorico" class="hidden">
     <div class="panel">
-      <div class="filter-row">
-        <div class="panel-title" style="margin-bottom:0">Histórico</div>
-        <select class="filter-select" id="filterCat">
-          <option value="todos">Todos</option>
-        </select>
+      <div class="filter-row"><div class="panel-title" style="margin-bottom:0">Histórico</div>
+        <select class="filter-select" id="filterCat"><option value="todos">Todos</option></select>
       </div>
       <div id="historyList"></div>
+      <div class="export-row">
+        <button class="btn-small btn-outline" onclick="window._exportCSV()">📤 Exportar CSV</button>
+      </div>
     </div>
   </div>
 
   <div class="footer">Feito com 💜 para os gatinhos</div>
 </div>
 
-<!-- Modal de Análise IA -->
+<!-- Modal -->
 <div class="modal-overlay hidden" id="modalOverlay" onclick="window._closeModal(event)">
   <div class="modal-content" onclick="event.stopPropagation()">
     <div class="modal-handle"></div>
     <button class="modal-close" onclick="window._closeModal()">&times;</button>
     <div class="modal-header">
       <div class="modal-emoji" id="modalEmoji">🐱</div>
-      <div>
-        <div class="modal-cat-name" id="modalCatName">Nome</div>
-        <div class="modal-cat-sub" id="modalCatSub">Análise de saúde</div>
-      </div>
+      <div><div class="modal-cat-name" id="modalCatName">Nome</div><div class="modal-cat-sub" id="modalCatSub">Análise de saúde</div></div>
     </div>
+    <div class="modal-actions" id="modalActions"></div>
     <div class="ai-analysis" id="aiAnalysis">
       <div class="ai-badge">✨ Análise IA</div>
-      <div class="ai-text" id="aiText">
-        <div class="ai-loading">
-          <div class="dot-pulse"><span></span><span></span><span></span></div>
-          Analisando histórico...
-        </div>
-      </div>
+      <div class="ai-text" id="aiText"></div>
     </div>
     <div class="weight-history-mini" id="modalHistory"></div>
   </div>
 </div>
 
+<!-- Edit Cat Modal -->
+<div class="modal-overlay hidden" id="editCatOverlay" onclick="window._closeEditCat(event)">
+  <div class="modal-content" onclick="event.stopPropagation()" style="max-height:50vh">
+    <div class="modal-handle"></div>
+    <div class="panel-title">✏️ Editar Gato</div>
+    <div class="form-group"><label class="form-label">Nome</label><input class="form-input" id="editCatName"></div>
+    <div class="form-group"><label class="form-label">Emoji</label><input class="form-input" id="editCatEmoji" maxlength="2"></div>
+    <input type="hidden" id="editCatId">
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn-teal" style="flex:1" onclick="window._saveEditCat()">Salvar</button>
+      <button class="btn-small btn-danger" style="padding:12px 20px" onclick="window._deleteCat()">🗑️ Excluir</button>
+    </div>
+  </div>
+</div>
+
 <div class="bottom-nav">
-  <button class="nav-btn active" data-tab="tabRegistro" id="navRegistro">
-    <span class="nav-icon">📝</span><span class="nav-label">Registrar</span>
-  </button>
-  <button class="nav-btn" data-tab="tabGrafico" id="navGrafico">
-    <span class="nav-icon">📊</span><span class="nav-label">Gráfico</span>
-  </button>
-  <button class="nav-btn" data-tab="tabHistorico" id="navHistorico">
-    <span class="nav-icon">📋</span><span class="nav-label">Histórico</span>
-  </button>
+  <button class="nav-btn active" data-tab="tabRegistro" id="navRegistro"><span class="nav-icon">📝</span><span class="nav-label">Peso</span></button>
+  <button class="nav-btn" data-tab="tabSaude" id="navSaude"><span class="nav-icon">💊</span><span class="nav-label">Saúde</span></button>
+  <button class="nav-btn" data-tab="tabGrafico" id="navGrafico"><span class="nav-icon">📊</span><span class="nav-label">Gráfico</span></button>
+  <button class="nav-btn" data-tab="tabHistorico" id="navHistorico"><span class="nav-icon">📋</span><span class="nav-label">Histórico</span></button>
 </div>
 
 <script type="module">
-  // ==================== FIREBASE (modular SDK via CDN) ====================
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import {
-    getFirestore,
-    collection,
-    addDoc,
-    deleteDoc,
-    doc,
-    onSnapshot
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import{getFirestore,collection,addDoc,deleteDoc,updateDoc,doc,onSnapshot}from"https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  var app = initializeApp({
-    apiKey: "AIzaSyBm03WXi_WVoC-h-aQWREhNuekPHZ22jWE",
-    authDomain: "gatos-d453c.firebaseapp.com",
-    projectId: "gatos-d453c"
-  });
+var app=initializeApp({apiKey:"AIzaSyBm03WXi_WVoC-h-aQWREhNuekPHZ22jWE",authDomain:"gatos-d453c.firebaseapp.com",projectId:"gatos-d453c"});
+var db=getFirestore(app);
+var catsCol=collection(db,"cats"),recordsCol=collection(db,"records"),vaxCol=collection(db,"vaccines");
 
-  var db = getFirestore(app);
-  var catsCol = collection(db, "cats");
-  var recordsCol = collection(db, "records");
+var CAT_COLORS=["#E8594F","#1BA8A0","#E8A317","#7C5CE7","#2ECC71","#E67E22","#3498DB","#E84393"];
+var CAT_EMOJIS=["🐱","😺","😸","🐈","😻","🙀","😽","😼"];
+var VAX_LABELS={vermifugo:"🪱 Vermífugo",v3:"💉 V3",v4:"💉 V4",v5:"💉 V5",antirrabica:"💉 Antirrábica",felv:"💉 FeLV",outro:"📋"};
 
-  // ==================== CONSTANTS ====================
-  var CAT_COLORS = ["#E8594F","#1BA8A0","#E8A317","#7C5CE7","#2ECC71","#E67E22","#3498DB","#E84393"];
-  var CAT_EMOJIS = ["🐱","😺","😸","🐈","😻","🙀","😽","😼"];
+var cats=[],records=[],vaccines=[],isLoaded=false,catsLoaded=false,recordsLoaded=false,vaxLoaded=false;
 
-  // ==================== STATE ====================
-  var cats = [];
-  var records = [];
-  var isLoaded = false;
-  var catsLoaded = false;
-  var recordsLoaded = false;
+function setSyncStatus(s){var el=document.getElementById("syncStatus");if(!el)return;el.className="sync-status "+s;var l={online:"Sincronizado",offline:"Offline",syncing:"Sincronizando...",error:"Erro"};el.innerHTML='<div class="sync-dot"></div><span>'+(l[s]||s)+"</span>"}
+function hideLoading(){if(isLoaded)return;isLoaded=true;var o=document.getElementById("loadingOverlay");if(o){o.classList.add("fade-out");setTimeout(function(){o.style.display="none"},400)}renderAll()}
+function checkAllLoaded(){if(catsLoaded&&recordsLoaded&&vaxLoaded){hideLoading();setSyncStatus("online")}}
 
-  // ==================== SYNC STATUS ====================
-  function setSyncStatus(status) {
-    var el = document.getElementById("syncStatus");
-    if (!el) return;
-    el.className = "sync-status " + status;
-    var labels = { online: "Sincronizado", offline: "Offline", syncing: "Sincronizando...", error: "Erro de conexão" };
-    el.innerHTML = '<div class="sync-dot"></div><span>' + (labels[status] || status) + "</span>";
-  }
+// Listeners
+onSnapshot(catsCol,function(s){cats=[];s.forEach(function(d){cats.push({id:d.id,name:d.data().name,emoji:d.data().emoji})});cats.sort(function(a,b){return(a.name||"").localeCompare(b.name||"")});catsLoaded=true;checkAllLoaded();if(isLoaded)renderAll()},function(){catsLoaded=true;checkAllLoaded();setSyncStatus("error")});
+onSnapshot(recordsCol,function(s){records=[];s.forEach(function(d){records.push({id:d.id,catId:d.data().catId,date:d.data().date,weight:d.data().weight})});records.sort(function(a,b){return(b.date||"").localeCompare(a.date||"")});recordsLoaded=true;checkAllLoaded();if(isLoaded)renderAll()},function(){recordsLoaded=true;checkAllLoaded();setSyncStatus("error")});
+onSnapshot(vaxCol,function(s){vaccines=[];s.forEach(function(d){var data=d.data();vaccines.push({id:d.id,catId:data.catId,type:data.type,customName:data.customName||"",date:data.date,nextDate:data.nextDate||"",notes:data.notes||""})});vaccines.sort(function(a,b){return(b.date||"").localeCompare(a.date||"")});vaxLoaded=true;checkAllLoaded();if(isLoaded)renderVaxList()},function(){vaxLoaded=true;checkAllLoaded();setSyncStatus("error")});
 
-  function hideLoading() {
-    if (isLoaded) return;
-    isLoaded = true;
-    var overlay = document.getElementById("loadingOverlay");
-    if (overlay) {
-      overlay.classList.add("fade-out");
-      setTimeout(function () { overlay.style.display = "none"; }, 400);
-    }
-    renderAll();
-  }
+window.addEventListener("online",function(){setSyncStatus("online")});
+window.addEventListener("offline",function(){setSyncStatus("offline")});
 
-  function checkAllLoaded() {
-    if (catsLoaded && recordsLoaded) {
-      hideLoading();
-      setSyncStatus("online");
-    }
-  }
+// Helpers
+function formatDate(d){if(!d)return"-";return new Date(d+"T12:00:00").toLocaleDateString("pt-BR",{day:"2-digit",month:"short"})}
+function formatDateFull(d){if(!d)return"-";return new Date(d+"T12:00:00").toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit",year:"numeric"})}
+function getCatStats(id){var r=records.filter(function(x){return x.catId===id}).sort(function(a,b){return(a.date||"").localeCompare(b.date||"")});if(!r.length)return null;var l=r[r.length-1],p=r.length>1?r[r.length-2]:null;return{latest:l.weight,diff:p?(l.weight-p.weight).toFixed(2):null,count:r.length}}
+function getCatColor(id){var i=cats.findIndex(function(c){return c.id===id});return CAT_COLORS[Math.max(0,i)%CAT_COLORS.length]}
+function showToast(m,t){t=t||"success";var e=document.querySelector(".toast");if(e)e.remove();var d=document.createElement("div");d.className="toast";d.textContent=m;d.style.background=t==="error"?"#E8594F":t==="info"?"#3498DB":"#1BA8A0";document.body.appendChild(d);setTimeout(function(){d.classList.add("hide");setTimeout(function(){d.remove()},300)},2300)}
+function daysUntil(d){if(!d)return null;var now=new Date();now.setHours(0,0,0,0);var target=new Date(d+"T12:00:00");return Math.ceil((target-now)/(1000*60*60*24))}
 
-  // ==================== FIRESTORE LISTENERS ====================
-  onSnapshot(catsCol, function (snapshot) {
-    cats = [];
-    snapshot.forEach(function (d) {
-      cats.push({ id: d.id, name: d.data().name, emoji: d.data().emoji });
-    });
-    cats.sort(function (a, b) { return (a.name || "").localeCompare(b.name || ""); });
-    catsLoaded = true;
-    checkAllLoaded();
-    if (isLoaded) renderAll();
-  }, function (err) {
-    console.error("Cats error:", err);
-    catsLoaded = true;
-    checkAllLoaded();
-    setSyncStatus("error");
-  });
+// Render
+function renderCatCards(){var c=document.getElementById("catCards");if(!c)return;var h="";cats.forEach(function(cat,i){var s=getCatStats(cat.id),co=CAT_COLORS[i%CAT_COLORS.length];h+='<div class="cat-card" onclick="window._openCatAnalysis(\''+cat.id+'\')" style="border:1.5px solid '+co+'20;box-shadow:0 4px 20px '+co+'10,0 1px 3px rgba(0,0,0,.04);animation:fadeUp '+(0.4+i*0.1)+'s ease both">';h+='<div class="blob" style="background:'+co+'0A"></div><div class="emoji">'+(cat.emoji||"🐱")+'</div><div class="name">'+(cat.name||"?")+"</div>";if(s){h+='<div class="weight-val" style="color:'+co+'">'+s.latest+"<span> kg</span></div>";if(s.diff){var v=parseFloat(s.diff),bg=v>0?"#FFF3E0":v<0?"#E0F7F5":"#F5F5F5",cl=v>0?"#E8A317":v<0?"#1BA8A0":"#999",ar=v>0?"▲":v<0?"▼":"=";h+='<div class="diff" style="background:'+bg+";color:"+cl+'">'+ar+" "+Math.abs(v)+" kg</div>"}}else h+='<div style="font-size:12px;color:#bbb;margin-top:8px">Sem registros</div>';h+="</div>"});h+='<div class="add-cat-btn" onclick="window._toggleAddCat()"><div class="plus">+</div><div class="label">Novo</div></div>';c.innerHTML=h}
 
-  onSnapshot(recordsCol, function (snapshot) {
-    records = [];
-    snapshot.forEach(function (d) {
-      records.push({ id: d.id, catId: d.data().catId, date: d.data().date, weight: d.data().weight });
-    });
-    records.sort(function (a, b) { return (b.date || "").localeCompare(a.date || ""); });
-    recordsLoaded = true;
-    checkAllLoaded();
-    if (isLoaded) renderAll();
-  }, function (err) {
-    console.error("Records error:", err);
-    recordsLoaded = true;
-    checkAllLoaded();
-    setSyncStatus("error");
-  });
+function renderSelects(){["selectCat","selectCatVax"].forEach(function(id){var s=document.getElementById(id);if(s){s.innerHTML='<option value="">Selecione o gato...</option>';cats.forEach(function(c){s.innerHTML+='<option value="'+c.id+'">'+(c.emoji||"🐱")+" "+c.name+"</option>"})}});["filterCat","filterCatVax"].forEach(function(id){var f=document.getElementById(id);if(f){f.innerHTML='<option value="todos">Todos</option>';cats.forEach(function(c){f.innerHTML+='<option value="'+c.id+'">'+c.name+"</option>"})}})}
 
-  window.addEventListener("online", function () { setSyncStatus("online"); });
-  window.addEventListener("offline", function () { setSyncStatus("offline"); });
+function renderHistory(){var f=document.getElementById("filterCat").value,l=document.getElementById("historyList");if(!l)return;var d=records.slice().sort(function(a,b){return(b.date||"").localeCompare(a.date||"")});if(f!=="todos")d=d.filter(function(r){return r.catId===f});if(!d.length){l.innerHTML='<div class="empty-state"><div class="icon">📋</div><div class="text">Nenhum registro encontrado</div></div>';return}var h="";d.forEach(function(r,i){var c=cats.find(function(x){return x.id===r.catId}),co=getCatColor(r.catId);h+='<div class="record-item" style="animation:fadeUp '+(0.2+i*0.04)+'s ease both"><div class="record-icon" style="background:'+co+'12">'+(c?c.emoji:"🐱")+'</div><div class="record-info"><div class="record-name">'+(c?c.name:"?")+'</div><div class="record-date">'+formatDateFull(r.date)+'</div></div><div class="record-weight" style="color:'+co+'">'+r.weight+'<span> kg</span></div><button class="delete-btn" onclick="window._deleteRecord(\''+r.id+"')\">✕</button></div>"});l.innerHTML=h}
 
-  // ==================== HELPERS ====================
-  function formatDate(d) {
-    if (!d) return "-";
-    return new Date(d + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
-  }
-  function formatDateFull(d) {
-    if (!d) return "-";
-    return new Date(d + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric" });
-  }
+function renderVaxList(){var f=document.getElementById("filterCatVax").value,l=document.getElementById("vaxList");if(!l)return;var d=vaccines.slice();if(f!=="todos")d=d.filter(function(v){return v.catId===f});if(!d.length){l.innerHTML='<div class="empty-state"><div class="icon">💊</div><div class="text">Nenhum registro de vacina</div></div>';return}var h="";d.forEach(function(v){var c=cats.find(function(x){return x.id===v.catId}),co=getCatColor(v.catId);var label=(VAX_LABELS[v.type]||"📋")+(v.customName?" "+v.customName:"");var days=daysUntil(v.nextDate),statusCls="",statusTxt="";if(v.nextDate){if(days===null||days>30){statusCls="vax-ok";statusTxt="✓ Em dia"}else if(days>0){statusCls="vax-warn";statusTxt="⏰ "+days+"d"}else{statusCls="vax-late";statusTxt="⚠️ Atrasado"}}
+h+='<div class="vax-item"><div class="vax-icon" style="background:'+co+'12">'+(c?c.emoji:"🐱")+'</div><div class="vax-info"><div class="vax-name">'+(c?c.name+" — ":"")+ label+'</div><div class="vax-date">Aplicado: '+formatDateFull(v.date)+'</div>'+(v.nextDate?'<div class="vax-next">Próxima: '+formatDateFull(v.nextDate)+"</div>":"")+(v.notes?'<div class="vax-date">'+v.notes+"</div>":"")+'</div>'+(statusTxt?'<div class="vax-status '+statusCls+'">'+statusTxt+"</div>":"")+'<button class="delete-btn" onclick="window._deleteVax(\''+v.id+"')\">✕</button></div>"});l.innerHTML=h}
 
-  function getCatStats(catId) {
-    var recs = records.filter(function (r) { return r.catId === catId; }).sort(function (a, b) { return (a.date || "").localeCompare(b.date || ""); });
-    if (!recs.length) return null;
-    var latest = recs[recs.length - 1];
-    var prev = recs.length > 1 ? recs[recs.length - 2] : null;
-    var diff = prev ? (latest.weight - prev.weight).toFixed(2) : null;
-    return { latest: latest.weight, diff: diff, count: recs.length };
-  }
+function renderChart(){var canvas=document.getElementById("chartCanvas");if(!canvas)return;var ctx=canvas.getContext("2d"),dpr=window.devicePixelRatio||1,rect=canvas.parentElement.getBoundingClientRect();canvas.width=rect.width*dpr;canvas.height=260*dpr;canvas.style.width=rect.width+"px";canvas.style.height="260px";ctx.scale(dpr,dpr);var W=rect.width,H=260,pad={top:20,right:20,bottom:40,left:50},cW=W-pad.left-pad.right,cH=H-pad.top-pad.bottom;ctx.clearRect(0,0,W,H);var ds={};records.forEach(function(r){if(r.date)ds[r.date]=true});var allDates=Object.keys(ds).sort();if(!allDates.length){ctx.fillStyle="#bbb";ctx.font="700 14px Nunito";ctx.textAlign="center";ctx.fillText("Nenhum registro ainda",W/2,H/2);return}var aw=records.map(function(r){return r.weight}),minW=Math.min.apply(null,aw)-.5,maxW=Math.max.apply(null,aw)+.5;if(maxW-minW<1){minW-=.5;maxW+=.5}ctx.strokeStyle="#f0f0f4";ctx.lineWidth=1;for(var i=0;i<=5;i++){var y=pad.top+(cH/5)*i;ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(W-pad.right,y);ctx.stroke();ctx.fillStyle="#A0A0B8";ctx.font="600 11px Nunito";ctx.textAlign="right";ctx.fillText((maxW-(maxW-minW)*(i/5)).toFixed(1)+" kg",pad.left-8,y+4)}ctx.textAlign="center";allDates.forEach(function(d,i){var x=pad.left+(cW/Math.max(allDates.length-1,1))*i;ctx.fillStyle="#A0A0B8";ctx.font="600 11px Nunito";ctx.fillText(formatDate(d),x,H-pad.bottom+20)});cats.forEach(function(cat,ci){var color=CAT_COLORS[ci%CAT_COLORS.length],cr=allDates.map(function(d){var r=records.find(function(rec){return rec.catId===cat.id&&rec.date===d});return r?r.weight:null});ctx.strokeStyle=color;ctx.lineWidth=3;ctx.lineJoin="round";ctx.lineCap="round";ctx.beginPath();var st=false;cr.forEach(function(w,i){if(w===null)return;var x=pad.left+(cW/Math.max(allDates.length-1,1))*i,y=pad.top+cH-((w-minW)/(maxW-minW))*cH;if(!st){ctx.moveTo(x,y);st=true}else ctx.lineTo(x,y)});ctx.stroke();cr.forEach(function(w,i){if(w===null)return;var x=pad.left+(cW/Math.max(allDates.length-1,1))*i,y=pad.top+cH-((w-minW)/(maxW-minW))*cH;ctx.beginPath();ctx.arc(x,y,5,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();ctx.strokeStyle="#fff";ctx.lineWidth=2.5;ctx.stroke()})});var leg=document.getElementById("chartLegend");if(leg)leg.innerHTML=cats.map(function(c,i){return'<div class="chart-legend-item"><div class="chart-legend-dot" style="background:'+CAT_COLORS[i%CAT_COLORS.length]+'"></div>'+c.name+"</div>"}).join("")}
 
-  function getCatColor(catId) {
-    var idx = cats.findIndex(function (c) { return c.id === catId; });
-    return CAT_COLORS[Math.max(0, idx) % CAT_COLORS.length];
-  }
+function renderAll(){renderCatCards();renderSelects();renderHistory();renderVaxList();var ab=document.querySelector(".nav-btn.active"),at=ab?ab.getAttribute("data-tab"):"";if(at==="tabGrafico")renderChart()}
 
-  // ==================== TOAST ====================
-  function showToast(msg, type) {
-    type = type || "success";
-    var existing = document.querySelector(".toast");
-    if (existing) existing.remove();
-    var t = document.createElement("div");
-    t.className = "toast";
-    t.textContent = msg;
-    t.style.background = type === "error" ? "#E8594F" : type === "info" ? "#3498DB" : "#1BA8A0";
-    document.body.appendChild(t);
-    setTimeout(function () { t.classList.add("hide"); setTimeout(function () { t.remove(); }, 300); }, 2300);
-  }
+// Actions
+window._toggleAddCat=function(){document.getElementById("addCatPanel").classList.toggle("hidden");document.getElementById("newCatName").focus()};
+window._addCat=function(){var n=document.getElementById("newCatName"),name=n.value.trim();if(!name)return;setSyncStatus("syncing");addDoc(catsCol,{name:name,emoji:CAT_EMOJIS[cats.length%CAT_EMOJIS.length],createdAt:new Date().toISOString()}).then(function(){n.value="";document.getElementById("addCatPanel").classList.add("hidden");showToast(name+" adicionado! 🎉");setSyncStatus("online")}).catch(function(){showToast("Erro ao adicionar","error");setSyncStatus("error")})};
+window._addRecord=function(){var cid=document.getElementById("selectCat").value,dt=document.getElementById("inputDate").value,w=parseFloat(document.getElementById("inputWeight").value);if(!cid||!dt){showToast("Preencha todos os campos!","error");return}if(isNaN(w)||w<=0||w>30){showToast("Peso inválido!","error");return}var btn=document.getElementById("btnRecord");btn.disabled=true;setSyncStatus("syncing");addDoc(recordsCol,{catId:cid,date:dt,weight:w,createdAt:new Date().toISOString()}).then(function(){document.getElementById("inputWeight").value="";showToast("Peso registrado! 🐾");setSyncStatus("online");btn.disabled=false}).catch(function(){showToast("Erro ao registrar","error");setSyncStatus("error");btn.disabled=false})};
+window._deleteRecord=function(id){if(!confirm("Remover este registro?"))return;setSyncStatus("syncing");deleteDoc(doc(db,"records",id)).then(function(){showToast("Removido","info");setSyncStatus("online")}).catch(function(){showToast("Erro","error");setSyncStatus("error")})};
 
-  // ==================== RENDER ====================
-  function renderCatCards() {
-    var container = document.getElementById("catCards");
-    if (!container) return;
-    var html = "";
-    cats.forEach(function (cat, i) {
-      var stats = getCatStats(cat.id);
-      var color = CAT_COLORS[i % CAT_COLORS.length];
-      html += '<div class="cat-card" onclick="window._openCatAnalysis(\'' + cat.id + '\')" style="cursor:pointer; border:1.5px solid ' + color + '20; box-shadow: 0 4px 20px ' + color + '10, 0 1px 3px rgba(0,0,0,0.04); animation: fadeUp ' + (0.4 + i * 0.1) + 's ease both;">';
-      html += '<div class="blob" style="background:' + color + '0A"></div>';
-      html += '<div class="emoji">' + (cat.emoji || "🐱") + "</div>";
-      html += '<div class="name">' + (cat.name || "?") + "</div>";
-      if (stats) {
-        html += '<div class="weight-val" style="color:' + color + '">' + stats.latest + "<span> kg</span></div>";
-        if (stats.diff) {
-          var v = parseFloat(stats.diff);
-          var bg = v > 0 ? "#FFF3E0" : v < 0 ? "#E0F7F5" : "#F5F5F5";
-          var cl = v > 0 ? "#E8A317" : v < 0 ? "#1BA8A0" : "#999";
-          var arrow = v > 0 ? "▲" : v < 0 ? "▼" : "=";
-          html += '<div class="diff" style="background:' + bg + ";color:" + cl + '">' + arrow + " " + Math.abs(v) + " kg</div>";
-        }
-      } else {
-        html += '<div style="font-size:12px;color:#bbb;margin-top:8px">Sem registros</div>';
-      }
-      html += "</div>";
-    });
-    html += '<div class="add-cat-btn" onclick="window._toggleAddCat()"><div class="plus">+</div><div class="label">Novo</div></div>';
-    container.innerHTML = html;
-  }
+// Vaccines
+window._addVax=function(){var cid=document.getElementById("selectCatVax").value,tp=document.getElementById("selectVaxType").value,dt=document.getElementById("inputVaxDate").value;if(!cid||!dt){showToast("Preencha gato e data!","error");return}var custom=tp==="outro"?document.getElementById("inputVaxOther").value.trim():"";var next=document.getElementById("inputVaxNext").value,notes=document.getElementById("inputVaxNotes").value.trim();setSyncStatus("syncing");addDoc(vaxCol,{catId:cid,type:tp,customName:custom,date:dt,nextDate:next,notes:notes,createdAt:new Date().toISOString()}).then(function(){document.getElementById("inputVaxNotes").value="";document.getElementById("inputVaxOther").value="";showToast("Registrado! 💊");setSyncStatus("online")}).catch(function(){showToast("Erro","error");setSyncStatus("error")})};
+window._deleteVax=function(id){if(!confirm("Remover este registro?"))return;deleteDoc(doc(db,"vaccines",id)).then(function(){showToast("Removido","info")}).catch(function(){showToast("Erro","error")})};
 
-  function renderSelects() {
-    var sel = document.getElementById("selectCat");
-    if (sel) {
-      sel.innerHTML = '<option value="">Selecione o gato...</option>';
-      cats.forEach(function (c) { sel.innerHTML += '<option value="' + c.id + '">' + (c.emoji || "🐱") + " " + c.name + "</option>"; });
-    }
-    var filt = document.getElementById("filterCat");
-    if (filt) {
-      filt.innerHTML = '<option value="todos">Todos</option>';
-      cats.forEach(function (c) { filt.innerHTML += '<option value="' + c.id + '">' + c.name + "</option>"; });
-    }
-  }
+// Edit/Delete Cat
+window._openEditCat=function(id){var c=cats.find(function(x){return x.id===id});if(!c)return;document.getElementById("editCatId").value=id;document.getElementById("editCatName").value=c.name;document.getElementById("editCatEmoji").value=c.emoji||"🐱";document.getElementById("editCatOverlay").classList.remove("hidden");document.body.style.overflow="hidden"};
+window._closeEditCat=function(e){if(e&&e.target&&!e.target.classList.contains("modal-overlay"))return;document.getElementById("editCatOverlay").classList.add("hidden");document.body.style.overflow=""};
+window._saveEditCat=function(){var id=document.getElementById("editCatId").value,name=document.getElementById("editCatName").value.trim(),emoji=document.getElementById("editCatEmoji").value.trim();if(!name){showToast("Nome é obrigatório","error");return}setSyncStatus("syncing");updateDoc(doc(db,"cats",id),{name:name,emoji:emoji||"🐱"}).then(function(){showToast("Atualizado! ✅");setSyncStatus("online");window._closeEditCat()}).catch(function(){showToast("Erro","error");setSyncStatus("error")})};
+window._deleteCat=function(){var id=document.getElementById("editCatId").value,c=cats.find(function(x){return x.id===id});if(!confirm("Excluir "+c.name+"? Os registros de peso e vacinas NÃO serão apagados."))return;setSyncStatus("syncing");deleteDoc(doc(db,"cats",id)).then(function(){showToast(c.name+" removido","info");setSyncStatus("online");window._closeEditCat();window._closeModal()}).catch(function(){showToast("Erro","error");setSyncStatus("error")})};
 
-  // ==================== ACTIONS ====================
-  window._toggleAddCat = function () {
-    document.getElementById("addCatPanel").classList.toggle("hidden");
-    document.getElementById("newCatName").focus();
-  };
+// Export CSV
+window._exportCSV=function(){if(!records.length){showToast("Sem dados para exportar","info");return}var lines=["Gato,Data,Peso (kg)"];records.forEach(function(r){var c=cats.find(function(x){return x.id===r.catId});lines.push((c?c.name:"?")+","+r.date+","+r.weight)});var csv=lines.join("\n"),blob=new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8;"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="cat-weight-export.csv";a.click();URL.revokeObjectURL(url);showToast("CSV exportado! 📤")};
 
-  window._addCat = function () {
-    var nameInput = document.getElementById("newCatName");
-    var name = nameInput.value.trim();
-    if (!name) return;
-    var emoji = CAT_EMOJIS[cats.length % CAT_EMOJIS.length];
-    setSyncStatus("syncing");
-    addDoc(catsCol, { name: name, emoji: emoji, createdAt: new Date().toISOString() })
-      .then(function () {
-        nameInput.value = "";
-        document.getElementById("addCatPanel").classList.add("hidden");
-        showToast(name + " adicionado! 🎉");
-        setSyncStatus("online");
-      })
-      .catch(function (err) {
-        console.error("Error adding cat:", err);
-        showToast("Erro ao adicionar gato", "error");
-        setSyncStatus("error");
-      });
-  };
+// Modal
+window._closeModal=function(e){if(e&&e.target&&!e.target.classList.contains("modal-overlay"))return;document.getElementById("modalOverlay").classList.add("hidden");document.body.style.overflow=""};
+window._openCatAnalysis=function(catId){var cat=cats.find(function(c){return c.id===catId});if(!cat)return;var cr=records.filter(function(r){return r.catId===catId}).sort(function(a,b){return(a.date||"").localeCompare(b.date||"")});var cv=vaccines.filter(function(v){return v.catId===catId}).sort(function(a,b){return(b.date||"").localeCompare(a.date||"")});
+document.getElementById("modalEmoji").textContent=cat.emoji||"🐱";document.getElementById("modalCatName").textContent=cat.name;document.getElementById("modalCatSub").textContent=cr.length+" pesagens · "+cv.length+" vacinas";
+// Actions
+document.getElementById("modalActions").innerHTML='<button class="btn-small btn-outline" onclick="window._openEditCat(\''+catId+'\')">✏️ Editar</button><button class="btn-small btn-purple" onclick="window._runAI(\''+catId+'\')">✨ Análise IA</button>';
+// History
+var hh='<div class="title">Histórico de Peso</div>';if(!cr.length)hh+='<div style="color:#bbb;font-size:13px;font-weight:600;padding:12px 0">Nenhum registro</div>';else cr.slice().reverse().slice(0,10).forEach(function(r){hh+='<div class="entry"><span>'+formatDateFull(r.date)+'</span><span style="color:'+getCatColor(catId)+'">'+r.weight+" kg</span></div>"});
+if(cv.length){hh+='<div class="section-divider"></div><div class="title">Vacinas / Vermífugos</div>';cv.slice(0,5).forEach(function(v){var label=(VAX_LABELS[v.type]||"📋")+(v.customName?" "+v.customName:"");hh+='<div class="entry"><span>'+label+'</span><span>'+formatDateFull(v.date)+"</span></div>"})}
+document.getElementById("modalHistory").innerHTML=hh;
+document.getElementById("aiText").innerHTML="<p style='color:#A0A0B8'>Clique em ✨ Análise IA para gerar insights</p>";
+document.getElementById("modalOverlay").classList.remove("hidden");document.body.style.overflow="hidden"};
 
-  window._addRecord = function () {
-    var catId = document.getElementById("selectCat").value;
-    var date = document.getElementById("inputDate").value;
-    var weight = parseFloat(document.getElementById("inputWeight").value);
-    if (!catId || !date) { showToast("Preencha todos os campos!", "error"); return; }
-    if (isNaN(weight) || weight <= 0 || weight > 30) { showToast("Peso inválido!", "error"); return; }
+window._runAI=function(catId){var cat=cats.find(function(c){return c.id===catId});if(!cat)return;var cr=records.filter(function(r){return r.catId===catId}).sort(function(a,b){return(a.date||"").localeCompare(b.date||"")});var cv=vaccines.filter(function(v){return v.catId===catId});
+if(cr.length<2){document.getElementById("aiText").innerHTML="<p>Adicione pelo menos 2 registros de peso para receber uma análise.</p>";return}
+document.getElementById("aiText").innerHTML='<div class="ai-loading"><div class="dot-pulse"><span></span><span></span><span></span></div>Analisando...</div>';
+var wd=cr.map(function(r){return r.date+": "+r.weight+"kg"}).join("\n");var vd=cv.length?"\n\nVacinas/Vermífugos:\n"+cv.map(function(v){return v.date+": "+(VAX_LABELS[v.type]||v.type)+(v.nextDate?" (próx: "+v.nextDate+")":"")}).join("\n"):"";
+var prompt="Você é um veterinário especialista em gatos. Analise os dados do gato "+cat.name+" e dê uma análise breve em português do Brasil. Seja direto e amigável. Máximo 4 parágrafos curtos. Inclua: 1) Tendência do peso 2) Se está saudável 3) Alertas 4) Dica prática"+(cv.length?" 5) Situação das vacinas/vermífugos":"")+"\n\nPeso:\n"+wd+vd;
+fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,messages:[{role:"user",content:prompt}]})}).then(function(r){return r.json()}).then(function(d){var t="";if(d.content&&d.content.length)t=d.content.map(function(b){return b.text||""}).join("");else if(d.error)t="Erro: "+(d.error.message||"desconhecido");var ps=t.split("\n").filter(function(p){return p.trim()});document.getElementById("aiText").innerHTML=ps.map(function(p){return"<p>"+p+"</p>"}).join("")}).catch(function(){document.getElementById("aiText").innerHTML="<p>Não foi possível conectar ao serviço de análise.</p>"})};
 
-    var btn = document.getElementById("btnRecord");
-    btn.disabled = true;
-    setSyncStatus("syncing");
+// Tabs
+function switchTab(tabId,btn){["tabRegistro","tabSaude","tabGrafico","tabHistorico"].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.add("hidden")});var t=document.getElementById(tabId);if(t)t.classList.remove("hidden");document.querySelectorAll(".nav-btn").forEach(function(b){b.classList.remove("active")});if(btn)btn.classList.add("active");if(tabId==="tabGrafico")setTimeout(renderChart,50);if(tabId==="tabHistorico")renderHistory();if(tabId==="tabSaude")renderVaxList()}
 
-    addDoc(recordsCol, { catId: catId, date: date, weight: weight, createdAt: new Date().toISOString() })
-      .then(function () {
-        document.getElementById("inputWeight").value = "";
-        showToast("Peso registrado! 🐾");
-        setSyncStatus("online");
-        btn.disabled = false;
-      })
-      .catch(function (err) {
-        console.error("Error adding record:", err);
-        showToast("Erro ao registrar peso", "error");
-        setSyncStatus("error");
-        btn.disabled = false;
-      });
-  };
-
-  window._deleteRecord = function (id) {
-    if (!confirm("Remover este registro?")) return;
-    setSyncStatus("syncing");
-    deleteDoc(doc(db, "records", id))
-      .then(function () {
-        showToast("Registro removido", "info");
-        setSyncStatus("online");
-      })
-      .catch(function (err) {
-        console.error("Error deleting:", err);
-        showToast("Erro ao remover", "error");
-        setSyncStatus("error");
-      });
-  };
-
-  // ==================== HISTORY ====================
-  function renderHistory() {
-    var filter = document.getElementById("filterCat").value;
-    var list = document.getElementById("historyList");
-    if (!list) return;
-    var filtered = records.slice().sort(function (a, b) { return (b.date || "").localeCompare(a.date || ""); });
-    if (filter !== "todos") filtered = filtered.filter(function (r) { return r.catId === filter; });
-
-    if (!filtered.length) {
-      list.innerHTML = '<div class="empty-state"><div class="icon">📋</div><div class="text">Nenhum registro encontrado</div></div>';
-      return;
-    }
-    var html = "";
-    filtered.forEach(function (rec, i) {
-      var cat = cats.find(function (c) { return c.id === rec.catId; });
-      var color = getCatColor(rec.catId);
-      html += '<div class="record-item" style="animation: fadeUp ' + (0.2 + i * 0.04) + 's ease both">';
-      html += '<div class="record-icon" style="background:' + color + '12">' + (cat ? cat.emoji : "🐱") + "</div>";
-      html += '<div class="record-info">';
-      html += '<div class="record-name">' + (cat ? cat.name : "?") + "</div>";
-      html += '<div class="record-date">' + formatDateFull(rec.date) + "</div>";
-      html += "</div>";
-      html += '<div class="record-weight" style="color:' + color + '">' + rec.weight + "<span> kg</span></div>";
-      html += '<button class="delete-btn" onclick="window._deleteRecord(\'' + rec.id + "')\">✕</button>";
-      html += "</div>";
-    });
-    list.innerHTML = html;
-  }
-
-  // ==================== CHART ====================
-  function renderChart() {
-    var canvas = document.getElementById("chartCanvas");
-    if (!canvas) return;
-    var ctx = canvas.getContext("2d");
-    var dpr = window.devicePixelRatio || 1;
-    var rect = canvas.parentElement.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = 260 * dpr;
-    canvas.style.width = rect.width + "px";
-    canvas.style.height = "260px";
-    ctx.scale(dpr, dpr);
-
-    var W = rect.width, H = 260;
-    var pad = { top: 20, right: 20, bottom: 40, left: 50 };
-    var cW = W - pad.left - pad.right;
-    var cH = H - pad.top - pad.bottom;
-
-    ctx.clearRect(0, 0, W, H);
-
-    var dateSet = {};
-    records.forEach(function (r) { if (r.date) dateSet[r.date] = true; });
-    var allDates = Object.keys(dateSet).sort();
-
-    if (!allDates.length) {
-      ctx.fillStyle = "#bbb"; ctx.font = "700 14px Nunito"; ctx.textAlign = "center";
-      ctx.fillText("Nenhum registro ainda", W / 2, H / 2);
-      return;
-    }
-
-    var allWeights = records.map(function (r) { return r.weight; });
-    var minW = Math.min.apply(null, allWeights) - 0.5;
-    var maxW = Math.max.apply(null, allWeights) + 0.5;
-    if (maxW - minW < 1) { minW -= 0.5; maxW += 0.5; }
-
-    var numLines = 5;
-    ctx.strokeStyle = "#f0f0f4"; ctx.lineWidth = 1;
-    for (var i = 0; i <= numLines; i++) {
-      var y = pad.top + (cH / numLines) * i;
-      ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
-      var val = (maxW - (maxW - minW) * (i / numLines)).toFixed(1);
-      ctx.fillStyle = "#A0A0B8"; ctx.font = "600 11px Nunito"; ctx.textAlign = "right";
-      ctx.fillText(val + " kg", pad.left - 8, y + 4);
-    }
-
-    ctx.textAlign = "center";
-    allDates.forEach(function (d, i) {
-      var x = pad.left + (cW / Math.max(allDates.length - 1, 1)) * i;
-      ctx.fillStyle = "#A0A0B8"; ctx.font = "600 11px Nunito";
-      ctx.fillText(formatDate(d), x, H - pad.bottom + 20);
-    });
-
-    cats.forEach(function (cat, ci) {
-      var color = CAT_COLORS[ci % CAT_COLORS.length];
-      var catRecs = allDates.map(function (d) {
-        var r = records.find(function (rec) { return rec.catId === cat.id && rec.date === d; });
-        return r ? r.weight : null;
-      });
-
-      ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.lineJoin = "round"; ctx.lineCap = "round";
-      ctx.beginPath();
-      var started = false;
-      catRecs.forEach(function (w, i) {
-        if (w === null) return;
-        var x = pad.left + (cW / Math.max(allDates.length - 1, 1)) * i;
-        var y = pad.top + cH - ((w - minW) / (maxW - minW)) * cH;
-        if (!started) { ctx.moveTo(x, y); started = true; }
-        else ctx.lineTo(x, y);
-      });
-      ctx.stroke();
-
-      catRecs.forEach(function (w, i) {
-        if (w === null) return;
-        var x = pad.left + (cW / Math.max(allDates.length - 1, 1)) * i;
-        var y = pad.top + cH - ((w - minW) / (maxW - minW)) * cH;
-        ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2);
-        ctx.fillStyle = color; ctx.fill();
-        ctx.strokeStyle = "#fff"; ctx.lineWidth = 2.5; ctx.stroke();
-      });
-    });
-
-    var legend = document.getElementById("chartLegend");
-    if (legend) {
-      legend.innerHTML = cats.map(function (c, i) {
-        return '<div class="chart-legend-item"><div class="chart-legend-dot" style="background:' + CAT_COLORS[i % CAT_COLORS.length] + '"></div>' + c.name + "</div>";
-      }).join("");
-    }
-  }
-
-  // ==================== TABS ====================
-  function switchTab(tabId, btn) {
-    ["tabRegistro", "tabGrafico", "tabHistorico"].forEach(function (id) {
-      var el = document.getElementById(id);
-      if (el) el.classList.add("hidden");
-    });
-    var target = document.getElementById(tabId);
-    if (target) target.classList.remove("hidden");
-    document.querySelectorAll(".nav-btn").forEach(function (b) { b.classList.remove("active"); });
-    if (btn) btn.classList.add("active");
-    if (tabId === "tabGrafico") setTimeout(renderChart, 50);
-    if (tabId === "tabHistorico") renderHistory();
-  }
-
-  function renderAll() {
-    renderCatCards();
-    renderSelects();
-    renderHistory();
-    var activeBtn = document.querySelector(".nav-btn.active");
-    var activeTab = activeBtn ? activeBtn.getAttribute("data-tab") : "";
-    if (activeTab === "tabGrafico") renderChart();
-  }
-
-  // ==================== MODAL & AI ANALYSIS ====================
-  window._closeModal = function (e) {
-    if (e && e.target && !e.target.classList.contains("modal-overlay")) return;
-    document.getElementById("modalOverlay").classList.add("hidden");
-    document.body.style.overflow = "";
-  };
-
-  window._openCatAnalysis = function (catId) {
-    var cat = cats.find(function (c) { return c.id === catId; });
-    if (!cat) return;
-
-    var catRecords = records.filter(function (r) { return r.catId === catId; })
-      .sort(function (a, b) { return (a.date || "").localeCompare(b.date || ""); });
-
-    // Preencher modal
-    document.getElementById("modalEmoji").textContent = cat.emoji || "🐱";
-    document.getElementById("modalCatName").textContent = cat.name;
-    document.getElementById("modalCatSub").textContent = catRecords.length + " registros de peso";
-
-    // Histórico mini
-    var histHtml = '<div class="title">Histórico de Peso</div>';
-    if (catRecords.length === 0) {
-      histHtml += '<div style="color:#bbb;font-size:13px;font-weight:600;padding:12px 0">Nenhum registro ainda</div>';
-    } else {
-      catRecords.slice().reverse().forEach(function (r) {
-        histHtml += '<div class="entry"><span>' + formatDateFull(r.date) + '</span><span style="color:' + getCatColor(catId) + '">' + r.weight + ' kg</span></div>';
-      });
-    }
-    document.getElementById("modalHistory").innerHTML = histHtml;
-
-    // Loading state
-    document.getElementById("aiText").innerHTML = '<div class="ai-loading"><div class="dot-pulse"><span></span><span></span><span></span></div>Analisando histórico...</div>';
-
-    // Mostrar modal
-    document.getElementById("modalOverlay").classList.remove("hidden");
-    document.body.style.overflow = "hidden";
-
-    // Chamar IA
-    if (catRecords.length < 2) {
-      document.getElementById("aiText").innerHTML = '<p>Ainda não há registros suficientes para uma análise completa. Adicione pelo menos 2 registros de peso para receber insights sobre a saúde do(a) ' + cat.name + '.</p>';
-      return;
-    }
-
-    var weightData = catRecords.map(function (r) { return r.date + ": " + r.weight + "kg"; }).join("\n");
-    var prompt = "Você é um veterinário especialista em gatos. Analise o histórico de peso do gato chamado " + cat.name + " e forneça uma análise breve e útil em português do Brasil. Seja direto e amigável. Use no máximo 4 parágrafos curtos. Inclua:\n1. Tendência geral do peso (ganho, perda ou estável)\n2. Se o peso está dentro de uma faixa saudável para um gato doméstico\n3. Alertas se houver variações preocupantes\n4. Uma dica prática de cuidado\n\nHistórico de peso:\n" + weightData;
-
-    fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        messages: [{ role: "user", content: prompt }]
-      })
-    })
-    .then(function (res) { return res.json(); })
-    .then(function (data) {
-      var text = "";
-      if (data.content && data.content.length > 0) {
-        text = data.content.map(function (b) { return b.text || ""; }).join("");
-      } else if (data.error) {
-        text = "Não foi possível gerar a análise: " + (data.error.message || "erro desconhecido");
-      }
-      // Converter quebras de linha em parágrafos
-      var paragraphs = text.split("\n").filter(function (p) { return p.trim(); });
-      var htmlText = paragraphs.map(function (p) { return "<p>" + p + "</p>"; }).join("");
-      document.getElementById("aiText").innerHTML = htmlText;
-    })
-    .catch(function (err) {
-      console.error("AI analysis error:", err);
-      document.getElementById("aiText").innerHTML = "<p>Não foi possível conectar ao serviço de análise. Verifique sua conexão e tente novamente.</p>";
-    });
-  };
-
-  // ==================== EVENT LISTENERS ====================
-  document.getElementById("inputDate").value = new Date().toISOString().slice(0, 10);
-
-  document.getElementById("btnAddCat").addEventListener("click", function () { window._addCat(); });
-  document.getElementById("btnRecord").addEventListener("click", function () { window._addRecord(); });
-  document.getElementById("filterCat").addEventListener("change", function () { renderHistory(); });
-
-  document.getElementById("newCatName").addEventListener("keydown", function (e) { if (e.key === "Enter") window._addCat(); });
-  document.getElementById("inputWeight").addEventListener("keydown", function (e) { if (e.key === "Enter") window._addRecord(); });
-
-  document.getElementById("navRegistro").addEventListener("click", function () { switchTab("tabRegistro", this); });
-  document.getElementById("navGrafico").addEventListener("click", function () { switchTab("tabGrafico", this); });
-  document.getElementById("navHistorico").addEventListener("click", function () { switchTab("tabHistorico", this); });
-
-  window.addEventListener("resize", function () {
-    var tab = document.getElementById("tabGrafico");
-    if (tab && !tab.classList.contains("hidden")) renderChart();
-  });
-
-  // Fallback: hide loading after 4s
-  setTimeout(function () {
-    if (!isLoaded) {
-      hideLoading();
-      if (!navigator.onLine) setSyncStatus("offline");
-    }
-  }, 4000);
+// Events
+document.getElementById("inputDate").value=new Date().toISOString().slice(0,10);
+document.getElementById("inputVaxDate").value=new Date().toISOString().slice(0,10);
+document.getElementById("btnAddCat").addEventListener("click",function(){window._addCat()});
+document.getElementById("btnRecord").addEventListener("click",function(){window._addRecord()});
+document.getElementById("btnVax").addEventListener("click",function(){window._addVax()});
+document.getElementById("filterCat").addEventListener("change",function(){renderHistory()});
+document.getElementById("filterCatVax").addEventListener("change",function(){renderVaxList()});
+document.getElementById("selectVaxType").addEventListener("change",function(){document.getElementById("vaxOtherGroup").classList.toggle("hidden",this.value!=="outro")});
+document.getElementById("newCatName").addEventListener("keydown",function(e){if(e.key==="Enter")window._addCat()});
+document.getElementById("inputWeight").addEventListener("keydown",function(e){if(e.key==="Enter")window._addRecord()});
+document.getElementById("navRegistro").addEventListener("click",function(){switchTab("tabRegistro",this)});
+document.getElementById("navSaude").addEventListener("click",function(){switchTab("tabSaude",this)});
+document.getElementById("navGrafico").addEventListener("click",function(){switchTab("tabGrafico",this)});
+document.getElementById("navHistorico").addEventListener("click",function(){switchTab("tabHistorico",this)});
+window.addEventListener("resize",function(){var t=document.getElementById("tabGrafico");if(t&&!t.classList.contains("hidden"))renderChart()});
+setTimeout(function(){if(!isLoaded){hideLoading();if(!navigator.onLine)setSyncStatus("offline")}},4000);
 </script>
 </body>
 </html>
