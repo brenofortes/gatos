@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#FEF9F4">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Cat Weight">
+<meta name="description" content="Acompanhe o peso dos seus gatos">
+<title>Cat Weight - Peso dos Gatos</title>
+<link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkNhdCBXZWlnaHQgLSBQZXNvIGRvcyBHYXRvcyIsCiAgInNob3J0X25hbWUiOiAiQ2F0IFdlaWdodCIsCiAgImRlc2NyaXB0aW9uIjogIkFjb21wYW5oZSBvIHBlc28gZG9zIHNldXMgZ2F0aW5ob3MiLAogICJzdGFydF91cmwiOiAiLiIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiI0ZFRjlGNCIsCiAgInRoZW1lX2NvbG9yIjogIiNGRUY5RjQiLAogICJpY29ucyI6IFtdCn0=">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: 'Nunito', 'Segoe UI', sans-serif;
+    background: linear-gradient(160deg, #FEF9F4 0%, #F0F4FD 50%, #FDF2F8 100%);
+    color: #2D3047;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
+    position: relative;
+  }
+  body::before, body::after {
+    content: ''; position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
+  }
+  body::before {
+    top: -120px; right: -80px; width: 350px; height: 350px;
+    background: radial-gradient(circle, rgba(232,89,79,0.07) 0%, transparent 70%);
+  }
+  body::after {
+    bottom: -100px; left: -60px; width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(27,168,160,0.06) 0%, transparent 70%);
+  }
+  .app { max-width: 720px; margin: 0 auto; padding: 28px 16px 120px; position: relative; z-index: 1; }
+
+  /* Animations */
+  @keyframes fadeUp { from { transform: translateY(16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+  @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+  @keyframes slideOut { from { opacity: 1; } to { transform: translateX(100px); opacity: 0; } }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .fade-up { animation: fadeUp 0.5s ease both; }
+
+  /* Header */
+  .header { text-align: center; margin-bottom: 28px; }
+  .header .paw { font-size: 48px; animation: float 3s ease-in-out infinite; }
+  .header h1 {
+    font-family: 'Fredoka One', cursive; font-size: 34px;
+    background: linear-gradient(135deg, #E8594F, #E8A317, #1BA8A0);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+  }
+  .header p { color: #A0A0B8; font-size: 14px; margin-top: 6px; font-weight: 700; }
+
+  /* Sync indicator */
+  .sync-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-top: 8px; padding: 4px 12px; border-radius: 20px;
+    font-size: 11px; font-weight: 700;
+    transition: all 0.3s;
+  }
+  .sync-status.online { background: #E0F7F5; color: #1BA8A0; }
+  .sync-status.offline { background: #FFF3E0; color: #E8A317; }
+  .sync-status.syncing { background: #E8F4FD; color: #3498DB; }
+  .sync-dot {
+    width: 7px; height: 7px; border-radius: 50%; background: currentColor;
+  }
+  .sync-status.syncing .sync-dot { animation: spin 1s linear infinite; border: 2px solid currentColor; border-top-color: transparent; background: none; width: 10px; height: 10px; }
+
+  /* Cat Cards */
+  .cat-cards { display: flex; gap: 12px; margin-bottom: 24px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x mandatory; }
+  .cat-cards::-webkit-scrollbar { height: 0; }
+  .cat-card {
+    flex: 0 0 auto; min-width: 150px; padding: 18px 20px;
+    background: #fff; border-radius: 18px; position: relative; overflow: hidden;
+    scroll-snap-align: start; transition: transform 0.2s;
+  }
+  .cat-card:active { transform: scale(0.97); }
+  .cat-card .blob { position: absolute; top: -25px; right: -25px; width: 70px; height: 70px; border-radius: 50%; }
+  .cat-card .emoji { font-size: 30px; margin-bottom: 6px; }
+  .cat-card .name { font-weight: 800; font-size: 15px; }
+  .cat-card .weight-val { font-size: 26px; font-weight: 900; margin-top: 4px; }
+  .cat-card .weight-val span { font-size: 13px; font-weight: 600; color: #999; }
+  .cat-card .diff {
+    display: inline-block; margin-top: 4px; padding: 2px 8px;
+    border-radius: 6px; font-size: 12px; font-weight: 800;
+  }
+  .add-cat-btn {
+    flex: 0 0 auto; min-width: 75px; padding: 18px 20px;
+    background: #fff; border-radius: 18px; border: 2px dashed #ddd;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; transition: all 0.2s; color: #bbb;
+  }
+  .add-cat-btn:hover { border-color: #1BA8A0; background: #F7FFFE; }
+  .add-cat-btn .plus { font-size: 26px; }
+  .add-cat-btn .label { font-size: 11px; font-weight: 700; }
+
+  /* Panels */
+  .panel {
+    background: #fff; border-radius: 22px; padding: 24px;
+    border: 1px solid #f0f0f4; box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+    margin-bottom: 16px; animation: fadeUp 0.4s ease both;
+  }
+  .panel-title { font-size: 17px; font-weight: 900; margin-bottom: 20px; }
+
+  /* Form */
+  .form-label {
+    font-size: 11px; font-weight: 800; color: #A0A0B8; display: block;
+    margin-bottom: 7px; letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .form-input, .form-select {
+    width: 100%; padding: 13px 16px; border-radius: 12px;
+    border: 1.5px solid #E8E8EE; background: #FAFBFD;
+    color: #2D3047; font-size: 14px; font-family: inherit; font-weight: 600;
+    transition: all 0.2s; -webkit-appearance: none; appearance: none;
+  }
+  .form-input:focus, .form-select:focus {
+    outline: none; box-shadow: 0 0 0 3px rgba(27,168,160,0.18); border-color: #1BA8A0;
+  }
+  .form-row { display: flex; gap: 12px; }
+  .form-group { flex: 1; margin-bottom: 16px; }
+
+  .btn-primary {
+    width: 100%; padding: 15px; border-radius: 14px; border: none;
+    background: linear-gradient(135deg, #E8594F, #E8A317);
+    color: #fff; font-weight: 800; font-size: 15px; cursor: pointer;
+    font-family: inherit; transition: all 0.2s;
+    box-shadow: 0 6px 24px rgba(232,89,79,0.28);
+  }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  .btn-teal {
+    padding: 11px 22px; border-radius: 12px; border: none;
+    background: linear-gradient(135deg, #1BA8A0, #3498DB);
+    color: #fff; font-weight: 800; cursor: pointer; font-size: 14px;
+    font-family: inherit; box-shadow: 0 4px 14px rgba(27,168,160,0.3);
+  }
+
+  /* Tabs (Bottom Nav) */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: rgba(255,255,255,0.92); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid #f0f0f4; padding: 8px 16px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    display: flex; gap: 4px; z-index: 100;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.04);
+  }
+  .nav-btn {
+    flex: 1; padding: 10px 0; border-radius: 12px; border: none;
+    background: transparent; color: #A0A0B8; font-weight: 800;
+    cursor: pointer; font-size: 11px; font-family: inherit;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    transition: all 0.25s;
+  }
+  .nav-btn.active {
+    background: linear-gradient(135deg, #1BA8A0, #3498DB);
+    color: #fff; box-shadow: 0 4px 14px rgba(27,168,160,0.25);
+  }
+  .nav-btn .nav-icon { font-size: 20px; }
+  .nav-btn .nav-label { font-size: 10px; }
+
+  /* Records */
+  .record-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px; border-radius: 14px;
+    background: #FAFBFD; border: 1px solid #f0f0f4;
+    transition: all 0.15s; margin-bottom: 8px;
+  }
+  .record-item:active { background: #F0F2F5; }
+  .record-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+  .record-info { flex: 1; }
+  .record-name { font-weight: 800; font-size: 14px; }
+  .record-date { font-size: 12px; color: #A0A0B8; font-weight: 600; }
+  .record-weight { font-weight: 900; font-size: 19px; }
+  .record-weight span { font-size: 12px; font-weight: 600; color: #bbb; }
+  .delete-btn {
+    width: 30px; height: 30px; border-radius: 9px;
+    border: 1.5px solid #fee; background: #FFF5F5;
+    color: #E8594F; cursor: pointer; font-size: 13px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; font-weight: 700;
+  }
+  .delete-btn:active { background: #FEE; }
+
+  /* Toast */
+  .toast {
+    position: fixed; top: 20px; right: 20px; z-index: 1000;
+    color: #fff; padding: 12px 24px; border-radius: 14px; font-weight: 700;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12); font-size: 14px;
+    animation: slideIn 0.3s ease;
+  }
+  .toast.hide { animation: slideOut 0.3s ease both; }
+
+  /* Chart */
+  .chart-container { width: 100%; overflow-x: auto; padding-bottom: 8px; }
+  .chart-canvas { min-width: 100%; height: 260px; }
+  .chart-legend { display: flex; gap: 16px; justify-content: center; margin-top: 16px; flex-wrap: wrap; }
+  .chart-legend-item { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; }
+  .chart-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* Filter */
+  .filter-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 22px; }
+  .filter-select {
+    padding: 7px 14px; border-radius: 10px;
+    border: 1.5px solid #E8E8EE; background: #FAFBFD;
+    color: #2D3047; font-size: 12px; font-family: inherit; font-weight: 700;
+  }
+
+  .empty-state { text-align: center; padding: 40px 0; color: #bbb; }
+  .empty-state .icon { font-size: 40px; margin-bottom: 8px; }
+  .empty-state .text { font-weight: 700; }
+  .empty-state .sub { font-size: 13px; margin-top: 4px; }
+
+  .add-cat-panel { margin-bottom: 16px; animation: fadeUp 0.3s ease both; }
+  .add-cat-panel .row { display: flex; gap: 10px; }
+
+  .footer { text-align: center; margin-top: 36px; font-size: 12px; color: #C8C8D8; font-weight: 700; }
+
+  /* Loading overlay */
+  .loading-overlay {
+    position: fixed; inset: 0; background: linear-gradient(160deg, #FEF9F4 0%, #F0F4FD 50%, #FDF2F8 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    z-index: 9999; transition: opacity 0.4s;
+  }
+  .loading-overlay.fade-out { opacity: 0; pointer-events: none; }
+  .loading-spinner { font-size: 48px; animation: float 1.5s ease-in-out infinite; }
+  .loading-text { font-family: 'Fredoka One', cursive; font-size: 20px; color: #1BA8A0; margin-top: 12px; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- Loading -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner">🐾</div>
+  <div class="loading-text">Carregando...</div>
+</div>
+
+<div class="app" id="app">
+  <!-- Header -->
+  <div class="header fade-up">
+    <div class="paw">🐾</div>
+    <h1>Cat Weight</h1>
+    <p>Acompanhe a saúde dos seus gatinhos</p>
+    <div class="sync-status online" id="syncStatus">
+      <div class="sync-dot"></div>
+      <span>Sincronizado</span>
+    </div>
+  </div>
+
+  <!-- Cat Cards -->
+  <div class="cat-cards" id="catCards"></div>
+
+  <!-- Add Cat Panel -->
+  <div class="panel add-cat-panel hidden" id="addCatPanel">
+    <div class="panel-title">🐈 Adicionar novo gato</div>
+    <div class="row">
+      <input class="form-input" id="newCatName" placeholder="Nome do gato" style="flex:1">
+      <button class="btn-teal" onclick="addCat()">Adicionar</button>
+    </div>
+  </div>
+
+  <!-- Tab Content -->
+  <div id="tabRegistro">
+    <div class="panel">
+      <div class="panel-title">Novo registro de peso</div>
+      <div class="form-group">
+        <label class="form-label">Gato</label>
+        <select class="form-select" id="selectCat"><option value="">Selecione o gato...</option></select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Data</label>
+          <input type="date" class="form-input" id="inputDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Peso (kg)</label>
+          <input type="number" step="0.1" min="0" max="30" class="form-input" id="inputWeight" placeholder="Ex: 4.5">
+        </div>
+      </div>
+      <button class="btn-primary" onclick="addRecord()" id="btnRecord">🐾 Registrar Peso</button>
+    </div>
+  </div>
+
+  <div id="tabGrafico" class="hidden">
+    <div class="panel">
+      <div class="panel-title">Evolução de peso</div>
+      <div class="chart-container">
+        <canvas id="chartCanvas" class="chart-canvas"></canvas>
+      </div>
+      <div class="chart-legend" id="chartLegend"></div>
+    </div>
+  </div>
+
+  <div id="tabHistorico" class="hidden">
+    <div class="panel">
+      <div class="filter-row">
+        <div class="panel-title" style="margin-bottom:0">Histórico</div>
+        <select class="filter-select" id="filterCat" onchange="renderHistory()">
+          <option value="todos">Todos</option>
+        </select>
+      </div>
+      <div id="historyList"></div>
+    </div>
+  </div>
+
+  <div class="footer">Feito com 💜 para os gatinhos</div>
+</div>
+
+<!-- Bottom Nav -->
+<div class="bottom-nav">
+  <button class="nav-btn active" data-tab="tabRegistro" onclick="switchTab('tabRegistro', this)">
+    <span class="nav-icon">📝</span><span class="nav-label">Registrar</span>
+  </button>
+  <button class="nav-btn" data-tab="tabGrafico" onclick="switchTab('tabGrafico', this)">
+    <span class="nav-icon">📊</span><span class="nav-label">Gráfico</span>
+  </button>
+  <button class="nav-btn" data-tab="tabHistorico" onclick="switchTab('tabHistorico', this)">
+    <span class="nav-icon">📋</span><span class="nav-label">Histórico</span>
+  </button>
+</div>
+
+<!-- Firebase SDK (compat mode for simplicity in single HTML) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+// ==================== FIREBASE CONFIG ====================
+const firebaseConfig = {
+  apiKey: "AIzaSyBm03WXi_WVoC-h-aQWREhNuekPHZ22jWE",
+  authDomain: "gatos-d453c.firebaseapp.com",
+  projectId: "gatos-d453c"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// Enable offline persistence
+db.enablePersistence({ synchronizeTabs: true }).catch(err => {
+  console.log('Persistence error:', err.code);
+});
+
+// Collections references
+const catsCol = db.collection('cats');
+const recordsCol = db.collection('records');
+
+// ==================== CONSTANTS ====================
+const CAT_COLORS = ["#E8594F","#1BA8A0","#E8A317","#7C5CE7","#2ECC71","#E67E22","#3498DB","#E84393"];
+const CAT_EMOJIS = ["🐱","😺","😸","🐈","😻","🙀","😽","😼"];
+
+// ==================== STATE ====================
+let cats = [];
+let records = [];
+let isLoaded = false;
+
+// ==================== SYNC STATUS ====================
+function setSyncStatus(status) {
+  const el = document.getElementById('syncStatus');
+  el.className = 'sync-status ' + status;
+  const labels = { online: 'Sincronizado', offline: 'Offline', syncing: 'Sincronizando...' };
+  el.innerHTML = `<div class="sync-dot"></div><span>${labels[status]}</span>`;
+}
+
+// ==================== FIRESTORE LISTENERS (real-time) ====================
+function setupListeners() {
+  // Listen to cats collection
+  catsCol.orderBy('createdAt', 'asc').onSnapshot(snapshot => {
+    cats = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    if (isLoaded) renderAll();
+  }, err => {
+    console.error('Cats listener error:', err);
+    setSyncStatus('offline');
+  });
+
+  // Listen to records collection
+  recordsCol.orderBy('date', 'desc').onSnapshot(snapshot => {
+    records = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    if (isLoaded) renderAll();
+    // Hide loading on first load
+    if (!isLoaded) {
+      isLoaded = true;
+      const overlay = document.getElementById('loadingOverlay');
+      overlay.classList.add('fade-out');
+      setTimeout(() => overlay.style.display = 'none', 400);
+      renderAll();
+    }
+  }, err => {
+    console.error('Records listener error:', err);
+    setSyncStatus('offline');
+  });
+
+  // Monitor connection
+  window.addEventListener('online', () => setSyncStatus('online'));
+  window.addEventListener('offline', () => setSyncStatus('offline'));
+}
+
+// ==================== HELPERS ====================
+function formatDate(d) {
+  return new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+}
+function formatDateFull(d) {
+  return new Date(d + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function getCatStats(catId) {
+  const recs = records.filter(r => r.catId === catId).sort((a, b) => a.date.localeCompare(b.date));
+  if (!recs.length) return null;
+  const latest = recs[recs.length - 1];
+  const prev = recs.length > 1 ? recs[recs.length - 2] : null;
+  const diff = prev ? (latest.weight - prev.weight).toFixed(2) : null;
+  return { latest: latest.weight, diff, count: recs.length };
+}
+
+function getCatColor(catId) {
+  const idx = cats.findIndex(c => c.id === catId);
+  return CAT_COLORS[idx % CAT_COLORS.length];
+}
+
+// ==================== TOAST ====================
+function showToast(msg, type = 'success') {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  t.style.background = type === 'error' ? '#E8594F' : type === 'info' ? '#3498DB' : '#1BA8A0';
+  document.body.appendChild(t);
+  setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 300); }, 2300);
+}
+
+// ==================== RENDER ====================
+function renderCatCards() {
+  const container = document.getElementById('catCards');
+  let html = '';
+  cats.forEach((cat, i) => {
+    const stats = getCatStats(cat.id);
+    const color = CAT_COLORS[i % CAT_COLORS.length];
+    html += `<div class="cat-card" style="border:1.5px solid ${color}20; box-shadow: 0 4px 20px ${color}10, 0 1px 3px rgba(0,0,0,0.04); animation: fadeUp ${0.4 + i*0.1}s ease both;">
+      <div class="blob" style="background:${color}0A"></div>
+      <div class="emoji">${cat.emoji}</div>
+      <div class="name">${cat.name}</div>`;
+    if (stats) {
+      html += `<div class="weight-val" style="color:${color}">${stats.latest}<span> kg</span></div>`;
+      if (stats.diff) {
+        const v = parseFloat(stats.diff);
+        const bg = v > 0 ? '#FFF3E0' : v < 0 ? '#E0F7F5' : '#F5F5F5';
+        const cl = v > 0 ? '#E8A317' : v < 0 ? '#1BA8A0' : '#999';
+        const arrow = v > 0 ? '▲' : v < 0 ? '▼' : '=';
+        html += `<div class="diff" style="background:${bg};color:${cl}">${arrow} ${Math.abs(v)} kg</div>`;
+      }
+    } else {
+      html += `<div style="font-size:12px;color:#bbb;margin-top:8px">Sem registros</div>`;
+    }
+    html += `</div>`;
+  });
+  html += `<div class="add-cat-btn" onclick="toggleAddCat()"><div class="plus">+</div><div class="label">Novo</div></div>`;
+  container.innerHTML = html;
+}
+
+function renderSelects() {
+  const sel = document.getElementById('selectCat');
+  sel.innerHTML = '<option value="">Selecione o gato...</option>';
+  cats.forEach(c => { sel.innerHTML += `<option value="${c.id}">${c.emoji} ${c.name}</option>`; });
+
+  const filt = document.getElementById('filterCat');
+  filt.innerHTML = '<option value="todos">Todos</option>';
+  cats.forEach(c => { filt.innerHTML += `<option value="${c.id}">${c.name}</option>`; });
+}
+
+function toggleAddCat() {
+  document.getElementById('addCatPanel').classList.toggle('hidden');
+  document.getElementById('newCatName').focus();
+}
+
+// ==================== FIRESTORE OPERATIONS ====================
+async function addCat() {
+  const nameInput = document.getElementById('newCatName');
+  const name = nameInput.value.trim();
+  if (!name) return;
+  const emoji = CAT_EMOJIS[cats.length % CAT_EMOJIS.length];
+
+  setSyncStatus('syncing');
+  try {
+    await catsCol.add({
+      name,
+      emoji,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    nameInput.value = '';
+    document.getElementById('addCatPanel').classList.add('hidden');
+    showToast(`${name} adicionado! 🎉`);
+    setSyncStatus('online');
+  } catch (err) {
+    console.error('Error adding cat:', err);
+    showToast('Erro ao adicionar gato', 'error');
+    setSyncStatus('offline');
+  }
+}
+
+async function addRecord() {
+  const catId = document.getElementById('selectCat').value;
+  const date = document.getElementById('inputDate').value;
+  const weight = parseFloat(document.getElementById('inputWeight').value);
+
+  if (!catId || !date) { showToast('Preencha todos os campos!', 'error'); return; }
+  if (isNaN(weight) || weight <= 0 || weight > 30) { showToast('Peso inválido!', 'error'); return; }
+
+  const btn = document.getElementById('btnRecord');
+  btn.disabled = true;
+  setSyncStatus('syncing');
+
+  try {
+    await recordsCol.add({
+      catId,
+      date,
+      weight,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    document.getElementById('inputWeight').value = '';
+    showToast('Peso registrado! 🐾');
+    setSyncStatus('online');
+  } catch (err) {
+    console.error('Error adding record:', err);
+    showToast('Erro ao registrar peso', 'error');
+    setSyncStatus('offline');
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+async function deleteRecord(id) {
+  setSyncStatus('syncing');
+  try {
+    await recordsCol.doc(id).delete();
+    showToast('Registro removido', 'info');
+    setSyncStatus('online');
+  } catch (err) {
+    console.error('Error deleting record:', err);
+    showToast('Erro ao remover', 'error');
+    setSyncStatus('offline');
+  }
+}
+
+// ==================== HISTORY ====================
+function renderHistory() {
+  const filter = document.getElementById('filterCat').value;
+  const list = document.getElementById('historyList');
+  let filtered = records.slice().sort((a, b) => b.date.localeCompare(a.date));
+  if (filter !== 'todos') filtered = filtered.filter(r => r.catId === filter);
+
+  if (!filtered.length) {
+    list.innerHTML = `<div class="empty-state"><div class="icon">📋</div><div class="text">Nenhum registro encontrado</div></div>`;
+    return;
+  }
+  let html = '';
+  filtered.forEach((rec, i) => {
+    const cat = cats.find(c => c.id === rec.catId);
+    const color = getCatColor(rec.catId);
+    html += `<div class="record-item" style="animation: fadeUp ${0.2 + i*0.04}s ease both">
+      <div class="record-icon" style="background:${color}12">${cat?.emoji || '🐱'}</div>
+      <div class="record-info">
+        <div class="record-name">${cat?.name || '?'}</div>
+        <div class="record-date">${formatDateFull(rec.date)}</div>
+      </div>
+      <div class="record-weight" style="color:${color}">${rec.weight}<span> kg</span></div>
+      <button class="delete-btn" onclick="deleteRecord('${rec.id}')">✕</button>
+    </div>`;
+  });
+  list.innerHTML = html;
+}
+
+// ==================== CHART ====================
+function renderChart() {
+  const canvas = document.getElementById('chartCanvas');
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = 260 * dpr;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = '260px';
+  ctx.scale(dpr, dpr);
+
+  const W = rect.width, H = 260;
+  const pad = { top: 20, right: 20, bottom: 40, left: 50 };
+  const cW = W - pad.left - pad.right;
+  const cH = H - pad.top - pad.bottom;
+
+  ctx.clearRect(0, 0, W, H);
+
+  const allDates = [...new Set(records.map(r => r.date))].sort();
+  if (!allDates.length) {
+    ctx.fillStyle = '#bbb'; ctx.font = '700 14px Nunito'; ctx.textAlign = 'center';
+    ctx.fillText('Nenhum registro ainda', W/2, H/2);
+    return;
+  }
+
+  let allWeights = records.map(r => r.weight);
+  let minW = Math.min(...allWeights) - 0.5;
+  let maxW = Math.max(...allWeights) + 0.5;
+  if (maxW - minW < 1) { minW -= 0.5; maxW += 0.5; }
+
+  const numLines = 5;
+  ctx.strokeStyle = '#f0f0f4'; ctx.lineWidth = 1;
+  for (let i = 0; i <= numLines; i++) {
+    const y = pad.top + (cH / numLines) * i;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    const val = (maxW - (maxW - minW) * (i / numLines)).toFixed(1);
+    ctx.fillStyle = '#A0A0B8'; ctx.font = '600 11px Nunito'; ctx.textAlign = 'right';
+    ctx.fillText(val + ' kg', pad.left - 8, y + 4);
+  }
+
+  ctx.textAlign = 'center';
+  allDates.forEach((d, i) => {
+    const x = pad.left + (cW / Math.max(allDates.length - 1, 1)) * i;
+    ctx.fillStyle = '#A0A0B8'; ctx.font = '600 11px Nunito';
+    ctx.fillText(formatDate(d), x, H - pad.bottom + 20);
+  });
+
+  cats.forEach((cat, ci) => {
+    const color = CAT_COLORS[ci % CAT_COLORS.length];
+    const catRecs = allDates.map(d => {
+      const r = records.find(rec => rec.catId === cat.id && rec.date === d);
+      return r ? r.weight : null;
+    });
+
+    ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    ctx.beginPath();
+    let started = false;
+    catRecs.forEach((w, i) => {
+      if (w === null) return;
+      const x = pad.left + (cW / Math.max(allDates.length - 1, 1)) * i;
+      const y = pad.top + cH - ((w - minW) / (maxW - minW)) * cH;
+      if (!started) { ctx.moveTo(x, y); started = true; }
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    catRecs.forEach((w, i) => {
+      if (w === null) return;
+      const x = pad.left + (cW / Math.max(allDates.length - 1, 1)) * i;
+      const y = pad.top + cH - ((w - minW) / (maxW - minW)) * cH;
+      ctx.beginPath(); ctx.arc(x, y, 5, 0, Math.PI * 2);
+      ctx.fillStyle = color; ctx.fill();
+      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2.5; ctx.stroke();
+    });
+  });
+
+  const legend = document.getElementById('chartLegend');
+  legend.innerHTML = cats.map((c, i) =>
+    `<div class="chart-legend-item"><div class="chart-legend-dot" style="background:${CAT_COLORS[i % CAT_COLORS.length]}"></div>${c.name}</div>`
+  ).join('');
+}
+
+// ==================== TABS ====================
+function switchTab(tabId, btn) {
+  document.querySelectorAll('[id^="tab"]').forEach(el => {
+    if (el.id === 'tabRegistro' || el.id === 'tabGrafico' || el.id === 'tabHistorico')
+      el.classList.add('hidden');
+  });
+  document.getElementById(tabId).classList.remove('hidden');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (tabId === 'tabGrafico') setTimeout(renderChart, 50);
+  if (tabId === 'tabHistorico') renderHistory();
+}
+
+function renderAll() {
+  renderCatCards();
+  renderSelects();
+  renderHistory();
+  const activeTab = document.querySelector('.nav-btn.active')?.dataset.tab;
+  if (activeTab === 'tabGrafico') renderChart();
+}
+
+// ==================== INIT ====================
+document.getElementById('inputDate').value = new Date().toISOString().slice(0, 10);
+document.getElementById('newCatName').addEventListener('keydown', e => { if (e.key === 'Enter') addCat(); });
+document.getElementById('inputWeight').addEventListener('keydown', e => { if (e.key === 'Enter') addRecord(); });
+window.addEventListener('resize', () => {
+  if (!document.getElementById('tabGrafico').classList.contains('hidden')) renderChart();
+});
+
+// Start real-time listeners
+setupListeners();
+
+// Fallback: hide loading after 5s even if Firebase is slow
+setTimeout(() => {
+  const overlay = document.getElementById('loadingOverlay');
+  if (overlay.style.display !== 'none') {
+    overlay.classList.add('fade-out');
+    setTimeout(() => overlay.style.display = 'none', 400);
+    if (!isLoaded) isLoaded = true;
+  }
+}, 5000);
+</script>
+</body>
+</html>
