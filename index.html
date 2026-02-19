@@ -218,6 +218,72 @@
   .loading-spinner { font-size: 48px; animation: float 1.5s ease-in-out infinite; }
   .loading-text { font-family: 'Fredoka One', cursive; font-size: 20px; color: #1BA8A0; margin-top: 12px; }
 
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    z-index: 500; display: flex; align-items: flex-end; justify-content: center;
+    animation: modalFadeIn 0.3s ease;
+  }
+  @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes modalSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-content {
+    background: #fff; border-radius: 24px 24px 0 0; padding: 28px 24px 40px;
+    width: 100%; max-width: 720px; max-height: 85vh; overflow-y: auto;
+    animation: modalSlideUp 0.35s ease;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.1);
+  }
+  .modal-handle {
+    width: 40px; height: 4px; background: #ddd; border-radius: 4px;
+    margin: 0 auto 20px;
+  }
+  .modal-header {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 20px;
+  }
+  .modal-emoji { font-size: 40px; }
+  .modal-cat-name { font-weight: 900; font-size: 22px; }
+  .modal-cat-sub { font-size: 13px; color: #A0A0B8; font-weight: 700; }
+  .modal-close {
+    position: absolute; top: 20px; right: 20px;
+    width: 32px; height: 32px; border-radius: 50%;
+    border: none; background: #f0f0f4; color: #666;
+    font-size: 16px; cursor: pointer; display: flex;
+    align-items: center; justify-content: center;
+  }
+  .ai-analysis {
+    background: linear-gradient(135deg, #F0F4FD, #FDF2F8);
+    border-radius: 16px; padding: 20px; position: relative;
+    min-height: 80px;
+  }
+  .ai-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    background: linear-gradient(135deg, #7C5CE7, #3498DB);
+    color: #fff; font-size: 11px; font-weight: 800;
+    padding: 3px 10px; border-radius: 8px; margin-bottom: 12px;
+  }
+  .ai-text { font-size: 14px; line-height: 1.7; color: #2D3047; font-weight: 600; }
+  .ai-text p { margin-bottom: 10px; }
+  .ai-loading {
+    display: flex; align-items: center; gap: 10px;
+    color: #7C5CE7; font-weight: 700; font-size: 14px;
+  }
+  .ai-loading .dot-pulse { display: inline-flex; gap: 4px; }
+  .ai-loading .dot-pulse span {
+    width: 6px; height: 6px; border-radius: 50%; background: #7C5CE7;
+    animation: dotPulse 1.2s ease-in-out infinite;
+  }
+  .ai-loading .dot-pulse span:nth-child(2) { animation-delay: 0.2s; }
+  .ai-loading .dot-pulse span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes dotPulse { 0%, 100% { opacity: 0.3; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
+
+  .weight-history-mini { margin-top: 16px; }
+  .weight-history-mini .title { font-size: 13px; font-weight: 800; color: #A0A0B8; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .weight-history-mini .entry {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid #f0f0f4; font-size: 13px; font-weight: 700;
+  }
+  .weight-history-mini .entry:last-child { border-bottom: none; }
+
   .hidden { display: none !important; }
 </style>
 </head>
@@ -293,6 +359,31 @@
   </div>
 
   <div class="footer">Feito com 💜 para os gatinhos</div>
+</div>
+
+<!-- Modal de Análise IA -->
+<div class="modal-overlay hidden" id="modalOverlay" onclick="window._closeModal(event)">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="window._closeModal()">&times;</button>
+    <div class="modal-header">
+      <div class="modal-emoji" id="modalEmoji">🐱</div>
+      <div>
+        <div class="modal-cat-name" id="modalCatName">Nome</div>
+        <div class="modal-cat-sub" id="modalCatSub">Análise de saúde</div>
+      </div>
+    </div>
+    <div class="ai-analysis" id="aiAnalysis">
+      <div class="ai-badge">✨ Análise IA</div>
+      <div class="ai-text" id="aiText">
+        <div class="ai-loading">
+          <div class="dot-pulse"><span></span><span></span><span></span></div>
+          Analisando histórico...
+        </div>
+      </div>
+    </div>
+    <div class="weight-history-mini" id="modalHistory"></div>
+  </div>
 </div>
 
 <div class="bottom-nav">
@@ -448,7 +539,7 @@
     cats.forEach(function (cat, i) {
       var stats = getCatStats(cat.id);
       var color = CAT_COLORS[i % CAT_COLORS.length];
-      html += '<div class="cat-card" style="border:1.5px solid ' + color + '20; box-shadow: 0 4px 20px ' + color + '10, 0 1px 3px rgba(0,0,0,0.04); animation: fadeUp ' + (0.4 + i * 0.1) + 's ease both;">';
+      html += '<div class="cat-card" onclick="window._openCatAnalysis(\'' + cat.id + '\')" style="cursor:pointer; border:1.5px solid ' + color + '20; box-shadow: 0 4px 20px ' + color + '10, 0 1px 3px rgba(0,0,0,0.04); animation: fadeUp ' + (0.4 + i * 0.1) + 's ease both;">';
       html += '<div class="blob" style="background:' + color + '0A"></div>';
       html += '<div class="emoji">' + (cat.emoji || "🐱") + "</div>";
       html += '<div class="name">' + (cat.name || "?") + "</div>";
@@ -690,6 +781,80 @@
     var activeTab = activeBtn ? activeBtn.getAttribute("data-tab") : "";
     if (activeTab === "tabGrafico") renderChart();
   }
+
+  // ==================== MODAL & AI ANALYSIS ====================
+  window._closeModal = function (e) {
+    if (e && e.target && !e.target.classList.contains("modal-overlay")) return;
+    document.getElementById("modalOverlay").classList.add("hidden");
+    document.body.style.overflow = "";
+  };
+
+  window._openCatAnalysis = function (catId) {
+    var cat = cats.find(function (c) { return c.id === catId; });
+    if (!cat) return;
+
+    var catRecords = records.filter(function (r) { return r.catId === catId; })
+      .sort(function (a, b) { return (a.date || "").localeCompare(b.date || ""); });
+
+    // Preencher modal
+    document.getElementById("modalEmoji").textContent = cat.emoji || "🐱";
+    document.getElementById("modalCatName").textContent = cat.name;
+    document.getElementById("modalCatSub").textContent = catRecords.length + " registros de peso";
+
+    // Histórico mini
+    var histHtml = '<div class="title">Histórico de Peso</div>';
+    if (catRecords.length === 0) {
+      histHtml += '<div style="color:#bbb;font-size:13px;font-weight:600;padding:12px 0">Nenhum registro ainda</div>';
+    } else {
+      catRecords.slice().reverse().forEach(function (r) {
+        histHtml += '<div class="entry"><span>' + formatDateFull(r.date) + '</span><span style="color:' + getCatColor(catId) + '">' + r.weight + ' kg</span></div>';
+      });
+    }
+    document.getElementById("modalHistory").innerHTML = histHtml;
+
+    // Loading state
+    document.getElementById("aiText").innerHTML = '<div class="ai-loading"><div class="dot-pulse"><span></span><span></span><span></span></div>Analisando histórico...</div>';
+
+    // Mostrar modal
+    document.getElementById("modalOverlay").classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+
+    // Chamar IA
+    if (catRecords.length < 2) {
+      document.getElementById("aiText").innerHTML = '<p>Ainda não há registros suficientes para uma análise completa. Adicione pelo menos 2 registros de peso para receber insights sobre a saúde do(a) ' + cat.name + '.</p>';
+      return;
+    }
+
+    var weightData = catRecords.map(function (r) { return r.date + ": " + r.weight + "kg"; }).join("\n");
+    var prompt = "Você é um veterinário especialista em gatos. Analise o histórico de peso do gato chamado " + cat.name + " e forneça uma análise breve e útil em português do Brasil. Seja direto e amigável. Use no máximo 4 parágrafos curtos. Inclua:\n1. Tendência geral do peso (ganho, perda ou estável)\n2. Se o peso está dentro de uma faixa saudável para um gato doméstico\n3. Alertas se houver variações preocupantes\n4. Uma dica prática de cuidado\n\nHistórico de peso:\n" + weightData;
+
+    fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        messages: [{ role: "user", content: prompt }]
+      })
+    })
+    .then(function (res) { return res.json(); })
+    .then(function (data) {
+      var text = "";
+      if (data.content && data.content.length > 0) {
+        text = data.content.map(function (b) { return b.text || ""; }).join("");
+      } else if (data.error) {
+        text = "Não foi possível gerar a análise: " + (data.error.message || "erro desconhecido");
+      }
+      // Converter quebras de linha em parágrafos
+      var paragraphs = text.split("\n").filter(function (p) { return p.trim(); });
+      var htmlText = paragraphs.map(function (p) { return "<p>" + p + "</p>"; }).join("");
+      document.getElementById("aiText").innerHTML = htmlText;
+    })
+    .catch(function (err) {
+      console.error("AI analysis error:", err);
+      document.getElementById("aiText").innerHTML = "<p>Não foi possível conectar ao serviço de análise. Verifique sua conexão e tente novamente.</p>";
+    });
+  };
 
   // ==================== EVENT LISTENERS ====================
   document.getElementById("inputDate").value = new Date().toISOString().slice(0, 10);
